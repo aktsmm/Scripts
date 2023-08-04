@@ -1,6 +1,6 @@
 
 ### 一番の注意
-まず、```Connect-AzAccount -Subscription を利用して正しいSubscription にログインしているかを確認しましょう。
+まず、```Connect-AzAccount -Subscription ```を利用して正しいSubscription にログインしているかを確認しましょう。
 ** （誤って権限のある他人の検証環境に入った状態で実行してしまうことは避けましょう!**
 ![image](https://github.com/aktsmm/Scripts/assets/71251920/6b8c3197-1263-4748-957a-5ca262a972ab)
 ::: 
