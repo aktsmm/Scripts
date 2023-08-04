@@ -1,3 +1,12 @@
+
+:::note warn
+まず、Connect-AzAccount -Subscription を利用して正しいSubscription にログインしているかを確認しましょう。
+** （誤って権限のある他人の検証環境に入った状態で実行してしまうことは避けましょう!**
+![image](https://github.com/aktsmm/Scripts/assets/71251920/6b8c3197-1263-4748-957a-5ca262a972ab)
+
+
+898f3c0779b8)
+
 * Azure のリソースを全消しします。
 * 例えば個人の検証環境をクリーンにしたくなる時に使います。
 * このコードを実行する前に、Azureアカウントに管理者アクセス権限があることを確認してください。
