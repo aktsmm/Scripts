@@ -16,6 +16,5 @@
 * また、上記のコードは一度に全てのリソースを削除しますが、通常はそのような大規模な削除操作は避けるべきです。必要なリソースだけを選択的に削除することをお勧めします。
 
 
-## 実行途中の画面：![image](https://github.com/aktsmm/Scripts/assets/71251920/0ffd54ea-9827-4977-bfe6-e4c5e7a60ecb)
-
+## 実行途中の画面：
 ![image](https://github.com/aktsmm/Scripts/assets/71251920/4913df6c-f02a-446b-b888-271d2a7e25b7)
