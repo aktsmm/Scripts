@@ -1,9 +1,12 @@
 
 ### 一番の注意
-まず、```Connect-AzAccount -Subscription (Subscription ID)```を利用して正しいSubscription にログインしているかを確認しましょう。
+まず、操作対象のSubscriptionであることを確認してください
++ ```Get-AzContext```を用いて現在のSubscription IDが正しいか確認しましょう。
+or
++ ログイン時 ```Connect-AzAccount'''を利用する際にオプション -Subscription (Subscription ID)```を利用して正しいSubscription にログインしましょう。
 **誤って権限のある他人の検証環境に入った状態で実行してしまうことは避けましょう!**
 ![image](https://github.com/aktsmm/Scripts/assets/71251920/6b8c3197-1263-4748-957a-5ca262a972ab)
-::: 
+
 ### その他の注意
 * Azure のリソースを全消しします。
 * 例えば個人の検証環境をクリーンにしたくなる時に使います。
