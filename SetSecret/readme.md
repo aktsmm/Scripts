@@ -11,3 +11,4 @@
 
 ## 関連
 ```(Get-AzKeyVault -Name $keyVaultName).ResourceId``` で作成したKey VaultのリソースIDを利用する
+![image](https://github.com/aktsmm/Scripts/assets/71251920/9b2da11d-1bd1-455f-bc45-c987bc311ab7)
