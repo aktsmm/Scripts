@@ -3,6 +3,9 @@
 終了は Ctrl + C 連打で終わります。
 推さない限り無限ループします。
 
-## ref 
+## puautogui module 
+これを入れてない場合は入れておいてください
+```python -m pip install pyautogui```
 
+## ref 
 https://yamapan.tokyo/?p=2133
