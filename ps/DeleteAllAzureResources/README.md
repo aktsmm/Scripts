@@ -9,6 +9,9 @@ or
 
 + ログイン時 ```Connect-AzAccount``` を利用する際にオプション ```-Subscription (Subscription ID)``` を利用して正しい Subscription にログインしましょう。
 **誤って権限のある他人の検証環境に入った状態で実行してしまうことは避けましょう!**
+  ```
+  Connect-AzAccount -Subscription <Subscription ID>
+  ```
 ![image](https://github.com/aktsmm/Scripts/assets/71251920/6b8c3197-1263-4748-957a-5ca262a972ab)
 
 参考までにAzure CLI の場合は
