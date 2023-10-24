@@ -9,6 +9,21 @@ or
 **誤って権限のある他人の検証環境に入った状態で実行してしまうことは避けましょう!**
 ![image](https://github.com/aktsmm/Scripts/assets/71251920/6b8c3197-1263-4748-957a-5ca262a972ab)
 
+参考までにAzure CLI の場合は
++ 現在のテナント、Subscription の情報を確認
+```
+az account show
+```
++ テナント名を指定してログイン
+```
+az login --tenant <テナントドメイン(例:XXXXXX.onmicrosoft.com)> or <オブジェクトID> 
+```
++ Subscription ID を指定してログイン
+```
+az account set -n <Subscription ID>
+```
+
+
 ### その他の注意
 * Azure のリソースを全消しします。
 * 例えば個人の検証環境をクリーンにしたくなる時に使います。
