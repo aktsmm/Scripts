@@ -20,10 +20,11 @@ $gatewaySubnetAddress = "10.100.0.0/24"
 
 ######コマンド実行
 # Login to Azure
-#Connect-AzAccount if you need
-#Select-AzSubscription -SubscriptionId $subscriptionId
+#Connect-AzAccount -Subscription $subscriptionId ##if you need
+
 # 現在のSubscriptionを取得
 get-azContext
+
 
 # Get existing Vnet and Resource Group
 $existingVnet = Get-AzVirtualNetwork -Name $existingVnetName -ResourceGroupName $existingResourceGroupName
