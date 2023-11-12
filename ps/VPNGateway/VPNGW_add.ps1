@@ -5,7 +5,7 @@
 ######変数設定
 # Set required parameters for existing resource group and Vnet (Please change the parameters according to your environment)
 $location = "japaneast"
-$subscriptionId = "xxxxxxxxxxxx" #if you need
+$subscriptionId = "xxxxxxxxxxxx" 
 $existingResourceGroupName = "rg-XXXX"
 $existingVnetName = "XXXX"
 
