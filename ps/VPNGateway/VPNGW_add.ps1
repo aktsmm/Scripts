@@ -19,8 +19,8 @@ $gatewaySubnetName = "GatewaySubnet" #DO NOT CHANGE
 $gatewaySubnetAddress = "10.100.0.0/24"
 
 ######コマンド実行
-# Login to Azure
-#Connect-AzAccount -Subscription $subscriptionId ##if you need
+# Login to Azure 
+Connect-AzAccount -Subscription $subscriptionId
 
 # 現在のSubscriptionを取得
 get-azContext
