@@ -1,7 +1,7 @@
 ## VPN GATWWAY を作ります
 **BasicSkuはAzure Portal からは作成できないことになっているのでAzure PowerShellなどで作る必要がある**
-**BasicSKUは将来的に廃止が決まってるのが、VpnGw1でもそこそこコストがかかるのでBasicSKUを使いたい人がいるはず**
-**ただしSKU:BasicSKUはP2Sには対応していないので、P２S環境を作りたい場合はSKU:VpnGw1を使う必要がある**
+**BasicSKUは将来的に廃止が決まってるのが、VpnGw1でもそこそこコストがかかるので BasicSKU を使いたい人がいるはず**
+**ただしSKU:BasicSKUはP2Sには対応していないので、P2S 環境を作りたい場合はSKU:VpnGw1を使う必要がある**
 
 ### VPNGWのコスト
 ・VPN Gateway の価格
