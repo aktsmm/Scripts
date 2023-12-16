@@ -1,5 +1,5 @@
 
-RG="rg-loadbalancer-l100"
+RG="rg-test"
 LOC="japaneast"
 VM_NAME="vm-ubuntu1804"
 VM_SIZE="Standard_B2s"
