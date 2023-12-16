@@ -4,8 +4,8 @@ LOC="japaneast"
 VM_NAME="vm-ubuntu1804"
 VM_SIZE="Standard_B2s"
 VM_IMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-VM_USERNAME="azureuser"
-VM_PASSWORD='WindowsAzure!2010'
+VM_USERNAME="test-admin"
+VM_PASSWORD='Azure!2030Azure!2030Azure!2030'
 
 cat <<EOF >cloud-init.txt
 #cloud-config
@@ -54,7 +54,7 @@ az network public-ip create --name "$VM_NAME-pip" -g $RG -l $LOC \
     --zone 1 2 3
 az network nic create --name "$VM_NAME-nic" -g $RG -l $LOC \
     --vnet-name vnet-main \
-    --subnet backend \
+    --subnet default \
     --public-ip-address "$VM_NAME-pip"
 az vm create --name $VM_NAME -g $RG -l $LOC \
     --image $VM_IMAGE \
