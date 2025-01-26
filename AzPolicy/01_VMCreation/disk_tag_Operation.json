@@ -1,0 +1,32 @@
+{
+    "mode": "Indexed",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Compute/disks"
+          },
+          {
+            "not": {
+              "field": "[concat('tags[\"', parameters('requiredTagName'), '\"]')]",
+              "exists": true
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    },
+    "parameters": {
+      "requiredTagName": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Required Tag Name",
+          "description": "The name of the tag that must exist on the managed disk."
+        },
+        "defaultValue": "RSVaultBackup"
+      }
+    }
+  }

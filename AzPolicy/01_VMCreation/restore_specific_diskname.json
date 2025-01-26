@@ -1,0 +1,33 @@
+{
+    "mode": "All",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Compute/virtualMachines"
+          },
+          {
+            "not": {
+              "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.managedDisk.id",
+              "contains": "[parameters('allowedDiskIdPattern')]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    },
+    "parameters": {
+      "allowedDiskIdPattern": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Allowed Disk ID Pattern",
+          "description": "Allowed managed disk ID pattern as substring."
+        },
+        "defaultValue": "-osdisk-20"
+      }
+    }
+  }
+  

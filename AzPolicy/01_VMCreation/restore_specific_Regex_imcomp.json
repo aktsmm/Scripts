@@ -1,0 +1,31 @@
+{
+    "mode": "All",
+    "parameters": {
+      "osDiskNamePattern": {
+        "type": "String",
+        "metadata": {
+          "description": "The regex pattern for allowed OS disk names.",
+          "displayName": "OS Disk Name Pattern"
+        },
+        "defaultValue": ".*osdisk-\\d{8}-\\d{6}$"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Compute/virtualMachines"
+          },
+          {
+            "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.name",
+            "notMatch": "[parameters('osDiskNamePattern')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "Deny"
+      }
+    }
+  }
+  
