@@ -1,83 +1,54 @@
 {
-    "mode": "All",
-    "policyRule": {
-      "if": {
-        "allOf": [
-          {
-            "field": "type",
-            "in": [
-              "Microsoft.Compute/virtualMachines",
-              "Microsoft.Compute/virtualMachineScaleSets"
-            ]
-          },
-          {
-            "not": {
-              "anyOf": [
-                {
-                  "allOf": [
-                    {
-                      "field": "type",
-                      "equals": "Microsoft.Compute/virtualMachines"
-                    },
-                    {
-                      "field": "Microsoft.Compute/virtualMachines/storageProfile.imageReference.publisher",
-                      "in": "[parameters('listOfAllowedImagePublishers')]"
-                    }
-                  ]
-                },
-                {
-                  "allOf": [
-                    {
-                      "field": "type",
-                      "equals": "Microsoft.Compute/virtualMachines"
-                    },
-                    {
-                      "field": "Microsoft.Compute/virtualMachines/storageProfile.imageReference.id",
-                      "in": "[parameters('listOfAllowedImagesResourceIDs')]"
-                    }
-                  ]
-                },
-                {
-                  "allOf": [
-                    {
-                      "field": "type",
-                      "equals": "Microsoft.Compute/virtualMachines"
-                    },
-                    {
-                      "field": "Microsoft.Compute/virtualMachines/storageProfile.imageReference.offer",
-                      "in": "[parameters('listOfAllowedImageOffers')]"
-                    }
-                  ]
-                },
-                {
-                  "allOf": [
-                    {
-                      "field": "type",
-                      "equals": "Microsoft.Compute/virtualMachineScaleSets"
-                    },
-                    {
-                      "field": "[concat('tags[\"', parameters('tagName'), '\"]')]",
-                      "exists": true
-                    }
-                  ]
-                },
-                {
-                  "allOf": [
-                    {
-                      "field": "type",
-                      "equals": "Microsoft.Compute/virtualMachines"
-                    },
-                    {
-                      "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.managedDisk.id",
-                      "contains": "[parameters('allowedDiskIdPattern')]"
-                    }
-                  ]
-                }
-              ]
+  "mode": "All",
+  "policyRule": {
+    "if": {
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Compute/virtualMachines"
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.Compute/virtualMachines/storageProfile.imageReference.publisher",
+                    "in": "[parameters('listOfAllowedImagePublishers')]"
+                  },
+                  {
+                    "field": "Microsoft.Compute/virtualMachines/storageProfile.imageReference.id",
+                    "in": "[parameters('listOfAllowedImagesResourceIDs')]"
+                  },
+                  {
+                    "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.managedDisk.id",
+                    "contains": "[parameters('allowedDiskIdPattern')]"
+                  }
+                ]
+              }
             }
-          }
-        ]
-      },
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Compute/virtualMachineScaleSets"
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "field": "[concat('tags[\"', parameters('tagName'), '\"]')]",
+                    "exists": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
       "then": {
         "effect": "deny"
       }

@@ -1,0 +1,33 @@
+{
+    "mode": "All",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Compute/virtualMachines"
+          },
+          {
+            "not": {
+              "field": "Microsoft.Compute/disks.tags",
+              "containsKey": "[parameters('tagKey')]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    },
+    "parameters": {
+      "tagKey": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Required Tag Key",
+          "description": "The key of the tag that must be present on the managed disk."
+        },
+        "defaultValue": "RSVaultBackup"
+      }
+    }
+  }
+  
