@@ -57,20 +57,14 @@ CSVを開く既定アプリケーション
 ```Powershell
 <#
 .SYNOPSIS
-  指定ホストに3秒おきにpingし、10秒以内に応答がなければ TIMEOUT として記録。
-  EnterキーまたはCtrl + Cで停止。
-
-.DESCRIPTION
-  - 変数 $PingInterval = 3 により、3秒おきに Ping
-  - 変数 $PingTimeout = 10 により、Ping応答が10秒以内に得られなければ TIMEOUT
-  - 応答が得られた場合は従来通り Status=Success
-  - ループ終了後にCSVファイルを開く
+  指定したホストに3秒ごとにPingを実行し、10秒以内に応答がない場合はTIMEOUTとして記録します。
+  Enterキーまたは Ctrl + C で停止します。
 
 .PARAMETER TargetHost
-  ping先 (FQDN or IP)
+  Pingを実行する対象のホスト (FQDN または IP)
 
 .EXAMPLE
-  .\ping_logger_lite.ps1 -TargetHost 8.8.8.8
+  .\PingLogger.ps1 -TargetHost 8.8.8.8
 #>
 
 [CmdletBinding()]
@@ -79,51 +73,45 @@ param (
     [string]$TargetHost
 )
 
-# ========== 設定変数 ==========
-# 3秒おきにPing
-$PingInterval = 3
-# 10秒以内に応答がなければ TIMEOUT
-$PingTimeout  = 10
+# ========== 設定 ==========
+$PingInterval = 3     # Pingの間隔（秒）
+$PingTimeout  = 10    # 応答がない場合にTIMEOUTとする時間（秒）
 
-# CSV ファイル名: <Host>_ping_<yyyyMMddHHmm>.csv
+# CSVファイルのパス
 $timestamp = (Get-Date).ToString("yyyyMMddHHmm")
 $CsvPath   = ".\\${TargetHost}_ping_${timestamp}.csv"
 
 Write-Host "===================================================="
-Write-Host " Ping to $TargetHost every $PingInterval sec"
-Write-Host " Timeout if no response in $PingTimeout sec → $PingTimeout Sec TIMEOUT"
-Write-Host " CSV Output: $CsvPath"
-Write-Host " [Enter] or [Ctrl + C] to stop"
+Write-Host " $TargetHost へのPingを $PingInterval 秒ごとに実行"
+Write-Host " 応答が $PingTimeout 秒以内にない場合はTIMEOUTとして記録"
+Write-Host " CSV出力ファイル: $CsvPath"
+Write-Host " [Enter]キーまたは [Ctrl + C] で停止"
 Write-Host "===================================================="
 
-# 1) CSVヘッダの列名を定義
-$columns = 'TimeStamp','Ping','Source','Destination','Address','DisplayAddress','Latency','Status','BufferSize'
-
-# 2) ファイルがなければヘッダ行を作成
+# CSVのヘッダーを定義
+$columns = 'タイムスタンプ','Ping','送信元','送信先','アドレス','表示アドレス','遅延時間','ステータス','バッファサイズ'
 if (!(Test-Path $CsvPath)) {
     $columns -join ',' | Out-File $CsvPath
 }
 
 $stop = $false
 while (-not $stop) {
-    # Enterキーでループ終了
+    # Enterキーでループを停止
     if ([Console]::KeyAvailable) {
         $key = [Console]::ReadKey($true)
         if ($key.Key -eq [ConsoleKey]::Enter) {
-            Write-Host "Stopping via Enter key..."
+            Write-Host "Enterキーが押されたため停止します..."
             $stop = $true
             break
         }
     }
 
-    # ==============================
-    # Ping (Test-Connection) 実行
-    # ==============================
-    # -Count 1 : 単発
-    # -Timeout <秒>: 応答がなければ TIMEOUT 扱い
-    #   → 古いバージョンのPowerShellだと -Timeout パラメータがない場合も。要注意。
-    #   → なければ代替策で Measure-Command 等を使う方法もあり。
-    $pingResult = Test-Connection -ComputerName $TargetHost -Count 1 -Timeout $PingTimeout -ErrorAction SilentlyContinue
+    # Ping実行
+    $pingResult = $null
+    $errMsg = $null
+    $responseTime = (Measure-Command {
+        $pingResult = Test-Connection -ComputerName $TargetHost -Count 1 -TimeoutSeconds $PingTimeout -ErrorAction SilentlyContinue -ErrorVariable errMsg
+    }).TotalMilliseconds
 
     # 初期値
     $pingVal        = ''
@@ -132,11 +120,10 @@ while (-not $stop) {
     $address        = ''
     $displayAddress = ''
     $latency        = ''
-    $status         = "$PingTimeout Sec TIMEOUT"# 先にTIMEOUTとし、応答があったら上書き
+    $status         = "TIMEOUT ($PingTimeout 秒)"
     $bufferSize     = ''
 
     if ($pingResult) {
-        # 応答があった場合
         $reply = $pingResult[0]
         $pingVal        = $reply.Ping
         $source         = $reply.Source
@@ -144,38 +131,37 @@ while (-not $stop) {
         $address        = $reply.Address
         $displayAddress = $reply.DisplayAddress
         $latency        = $reply.Latency
-        $status         = $reply.Status  # 通常 'Success'
+        $status         = $reply.Status
         $bufferSize     = $reply.BufferSize
+    } elseif ($errMsg) {
+        $status = "TIMEOUT (エラー: $errMsg)"
     }
 
-    # タイムスタンプ (秒単位)
+    # タイムスタンプ
     $timeStamp = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
 
-    # CSV用の1行を組み立て
-    $csvLine = @(
-        $timeStamp,
-        $pingVal,
-        $source,
-        $destination,
-        $address,
-        $displayAddress,
-        $latency,
-        $status,
-        $bufferSize
-    ) -join ','
+    # CSV行を作成
+    $csvRow = [PSCustomObject]@{
+        タイムスタンプ  = $timeStamp
+        Ping           = $pingVal
+        送信元         = $source
+        送信先         = $destination
+        アドレス       = $address
+        表示アドレス   = $displayAddress
+        遅延時間       = $latency
+        ステータス     = $status
+        バッファサイズ = $bufferSize
+    }
+    $csvRow | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Add-Content -Path $CsvPath
 
-    # ログに追記
-    Add-Content -Path $CsvPath -Value $csvLine
-
-    # === 指定した間隔で待機 (3秒) ===
+    # 次のPingまで待機
     Start-Sleep -Seconds $PingInterval
 }
 
-Write-Host "Logging finished."
-Write-Host "Check result file: $CsvPath"
-Write-Host "Opening CSV..."
+Write-Host "ログ記録を終了しました。"
+Write-Host "結果ファイル: $CsvPath"
+Write-Host "CSVファイルを開きます..."
 
 Invoke-Item $CsvPath
-Write-Host "Done."
-
+Write-Host "完了しました。"
 ```
