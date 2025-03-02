@@ -1,8 +1,8 @@
-# Flexible Data Generator
+# Test Data Generator
 
 ## 概要
 
-Flexible Data Generator は、テスト用のファイルとディレクトリ構造を柔軟に生成するためのスクリプトです。特定のファイルサイズ、ファイル数、ディレクトリ階層を持つデータセットを簡単に作成できます。
+Test Data Generator は、テスト用のファイルとディレクトリ構造を柔軟に生成するためのスクリプトです。特定のファイルサイズ、ファイル数、ディレクトリ階層を持つデータセットを簡単に作成できます。
 
 ## 使用例
 
@@ -37,18 +37,18 @@ Flexible Data Generator は、テスト用のファイルとディレクトリ�
 
 ## 使い方
 
-後述のソースコードをスクリプト(flexible_data_generator.sh) にします
+後述のソースコードをスクリプト(test_data_generator.sh) にします
 
 1. スクリプトを実行可能にします：
    ```bash
-   chmod +x flexible_data_generator.sh
+   chmod +x test_data_generator.sh
    ```
 
 2. 必要に応じてスクリプト内のパラメータを編集します。
 
 3. スクリプトを実行します：
    ```bash
-   ./flexible_data_generator.sh
+   ./test_data_generator.sh
    ```
 
 4. スクリプトの実行中、進捗状況が表示されます。
