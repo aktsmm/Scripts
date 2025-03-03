@@ -47,9 +47,7 @@ TargetHost には IP または ホスト名を指定してください。
 + Windows PowerShell 5.1 以上が望ましい
 Test-Connection に -Timeout パラメータを使用するため。
 古いバージョンでは -Timeout が存在せず、別の方法でタイムアウト制御が必要になる場合があります。
-CSVを開く既定アプリケーション
-
-+ Windows で CSV ファイルの関連付けが Excel になっていれば、停止後に Excel で自動表示されます。
++ Windows で CSV ファイルの関連付けが Excel になっていれば、停止後に Excel で自動表示されます。(Enter終了した場合)
 
 
 ## ソース
