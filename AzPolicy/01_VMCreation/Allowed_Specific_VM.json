@@ -1,3 +1,4 @@
+
 {
   "mode": "All",
   "policyRule": {
@@ -39,12 +40,8 @@
               "not": {
                 "anyOf": [
                   {
-                    "field": "name",
-                    "like": "[concat(parameters('vmssNamePrefix'), '*')]"
-                  },
-                  {
-                    "field": "Microsoft.Compute/virtualMachines/storageProfile.imageReference.publisher",
-                    "in": "[parameters('listOfAllowedImagePublishers')]"
+                    "field": "[concat('tags[\"', parameters('tagName'), '\"]')]",
+                    "exists": true
                   }
                 ]
               }
@@ -53,47 +50,57 @@
         }
       ]
     },
-    "then": {
-      "effect": "deny"
-    }
-  },
-  "parameters": {
-    "listOfAllowedImagePublishers": {
-      "type": "Array",
-      "metadata": {
-        "displayName": "Allowed Image Publishers",
-        "description": "List of allowed image publishers. Only images from these publishers are permitted. Example: [\"center-for-internet-security-inc\"]"
-      },
-      "defaultValue": [
-        "UbuntuServer",
-        "microsoftsqlserver"
-      ]
+      "then": {
+        "effect": "deny"
+      }
     },
-    "listOfAllowedImagesResourceIDs": {
-      "type": "Array",
-      "metadata": {
-        "displayName": "Allowed Images Resource IDs for Custom Images",
-        "description": "List of allowed custom image resource IDs. Only these custom images are permitted. Example: [\"/subscriptions/XXXXXXXXXXX/resourceGroups/rg-test/providers/Microsoft.Compute/images/image-from-vm\"]"
+    "parameters": {
+      "listOfAllowedImagePublishers": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Image Publishers",
+          "description": "List of allowed image publishers. Only images from these publishers are permitted. Example: [\"RedHat\"]"
+        },
+        "defaultValue": [
+          "RedHat"
+        ]
       },
-      "defaultValue": [
-        "/subscriptions/XXXXXXXXXXX/resourceGroups/rg-test/providers/Microsoft.Compute/images/image-from-vm"
-      ]
-    },
-    "allowedDiskIdPattern": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Allowed Disk ID Pattern (Contains Any Specified String)",
-        "description": "Allows the creation of VMs from disks that contain any specified string. The default value is intended for disks restored by Azure VM Backup"
+      "listOfAllowedImageOffers": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Image Offers for VMs",
+          "description": "List of allowed image offers. Only images with these offers are permitted. Example: [\"UbuntuServer\", \"microsoftsqlserver\"]"
+        },
+        "defaultValue": [
+          "UbuntuServer",
+          "microsoftsqlserver"
+        ]
       },
-      "defaultValue": "-osdisk-20"
-    },
-    "vmssNamePrefix": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Allowed VMSS Name Prefix",
-        "description": "VM scale sets with names starting with this prefix are allowed."
+      "listOfAllowedImagesResourceIDs": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Images Resource IDs for Custum Images",
+          "description": "List of allowed custom image resource IDs. Only these custom images are permitted. Example: [\"/subscriptions/XXXXXXXXXXX/resourceGroups/rg-test/providers/Microsoft.Compute/images/image-from-vm\"]"
+        },
+        "defaultValue": [
+          "/subscriptions/XXXXXXXXXXX/resourceGroups/rg-test/providers/Microsoft.Compute/images/image-from-vm"
+        ]
       },
-      "defaultValue": "aks-"
+      "tagName": {
+        "type": "String",
+        "metadata": {
+        "displayName": "Tag Name to Bypass Image Restrictions for VMSS",
+        "description": "The tag name that must exist on a VM scale set to bypass image restrictions. The default value is intended for VM Scale Sets managed by Azure Kubernetes Service (AKS). Example: \"aks-managed-creationSource\""        },
+        "defaultValue": "aks-managed-creationSource"
+      },
+      "allowedDiskIdPattern": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Allowed Disk ID Pattern (Contains Any Specified String)",
+          "description": "Allows the creation of VMs from disks that contain any specified string.The default value is intended for disks restored by Azure VM Backup"
+        },
+        "defaultValue": "-osdisk-20"
+      }
     }
   }
-}
+  
