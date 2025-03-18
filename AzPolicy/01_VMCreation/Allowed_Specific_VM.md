@@ -1,4 +1,4 @@
-# Allowed_Specific_VM_re.json ReadMe
+# Allowed_Specific_VM.json ReadMe
 ## Azure Policy: VM および VMSS イメージ制限ポリシー / Virtual Machine and Scale Set Image Restrictions
 
 ## 概要
