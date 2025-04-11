@@ -4,9 +4,23 @@
 sudo apt-get update
 sudo apt-get install -y squid python3
 
-# Squid設定変更
-sudo sed -i 's/^http_port .*/http_port 8080/' /etc/squid/squid.conf
-sudo sed -i 's/^#http_access allow all/http_access allow all/' /etc/squid/squid.conf
+# 既存のsquid.confをすべてコメントアウトし、末尾に必要な設定だけ追加
+sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak.$(date +%s)
+sudo sed -i 's/^/# Commented by setup script: /' /etc/squid/squid.conf
+
+# Squidの新しい設定を追記（完全許可）
+sudo tee -a /etc/squid/squid.conf > /dev/null <<EOF
+
+# === Added by setup script ===
+http_port 8080
+
+acl all src all
+acl Safe_ports port 80 443 21 70 210 280 488 591 777 1025-65535
+acl CONNECT method CONNECT
+
+http_access allow all
+# =============================
+EOF
 
 # Squid再起動と自動起動化
 sudo systemctl restart squid
