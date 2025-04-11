@@ -31,14 +31,18 @@ chmod +x setup.sh
 - ログファイル: `/var/log/python_http.log`
 
 ## ⚠️ 注意事項
-
+> **このスクリプトは、検証・学習目的のローカル環境を想定しています。**
 - `squid.conf` にて `http_access allow all` を有効にしています。本番環境ではアクセス制限の調整が必要です。
+- `http_access allow all` により、すべてのリクエストを無条件で許可します。
+  - 本番環境では、適切な `acl`（例: `localnet`, `mypc`）を使って制限してください。
 - HTTP サーバーは `root` ユーザーとして動作します。セキュリティ上の観点から、必要に応じて実行ユーザーを変更してください。
 - ポート `80` を使用するため root 権限が必要です。必要に応じて他のポートに変更可能です。
+- systemd 経由で起動する Python HTTP サーバーは、root ユーザーで動作し、誰でもアクセス可能です。
 
 ## 参考
 * コマンド `sudo tail -f /var/log/squid/access.log` にてリアルタイムでSquidのアクセスログを確認する事が可能。
-* コマンド `ip -4 addr show eth0 | grep inet | awk '{print $2}' | cut -d/ -f1` にて eth0 の IP アドレスを確認可能。
+* コマンド `ip -4 addr show eth0 | grep inet | awk '{print $2}' | cut -d/ -f1` や `hostname -I` にて eth0 の IP アドレスを確認可能。
+* コマンド `curl -x http://<プロキシのIP>:8080 http://example.com` や `Invoke-WebRequest http://example.com -Proxy "http://<プロキシのIP>:8080"` にてテスト可能
 
 ## 📜 ライセンス
 
@@ -48,3 +52,7 @@ MIT ライセンス
 ✅ 改変して再配布してもOK（ライセンス表示だけ守れば）
 ✅ ライセンスと著作権表示を残すことが条件
 ✅ただし、このソフトを使ったことで問題が起きても、作者は責任を負いません。
+
+## 参考
+* コマンド `sudo tail -f /var/log/squid/access.log` にてリアルタイムでSquidのアクセスログを確認する事が可能。
+* コマンド `ip -4 addr show eth0 | grep inet | awk '{print $2}' | cut -d/ -f1` にて eth0 の IP アドレスを確認可能。
