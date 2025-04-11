@@ -1,6 +1,8 @@
 # Squid プロキシ + Python HTTP サーバー自動構築スクリプト
 
 このスクリプトは、検証向けに Ubuntu 環境上で Squid プロキシサーバーと Python ベースの簡易 HTTP サーバーを構築・起動するためのものです。
+[setup-squid-http.sh](./setup-squid-http.sh)
+
 
 ## ✅ 機能概要
 
