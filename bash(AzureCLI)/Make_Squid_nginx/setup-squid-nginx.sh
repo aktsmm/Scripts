@@ -56,6 +56,36 @@ server {
         add_header Content-Type "text/html; charset=UTF-8";
         return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTP, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
     }
+    # HTTP トップページ
+    location = / {
+        add_header Content-Type "text/html; charset=UTF-8";
+        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
+    }
+
+    location = /s {
+        add_header Content-Type "text/plain; charset=UTF-8";
+        return 200 "ServerAddr: \$server_addr\nHostname: \$hostname";
+    }
+
+    location = /ua {
+        add_header Content-Type "text/plain; charset=UTF-8";
+        return 200 "User-Agent: \$http_user_agent";
+    }
+
+    location = /r {
+        add_header Content-Type "text/plain; charset=UTF-8";
+        return 200 "Referer: \$http_referer";
+    }
+
+    location = /ip {
+        add_header Content-Type "text/plain; charset=UTF-8";
+        return 200 "RemoteAddr: \$remote_addr\nClientIP: \$http_x_real_ip";
+    }
+
+    location = /all {
+        add_header Content-Type "text/html; charset=UTF-8";
+        return 200 "<pre>ServerAddr: \$server_addr\nHostname: \$hostname\nRemoteAddr: \$remote_addr\nClientIP: \$http_x_real_ip\nX-Forwarded-For: \$http_x_forwarded_for\nX-Real-IP: \$http_x_real_ip\nHost: \$host\nUser-Agent: \$http_user_agent\nReferer: \$http_referer</pre>";
+    }
 
     # 静的ファイルハンドリング
     location / {
