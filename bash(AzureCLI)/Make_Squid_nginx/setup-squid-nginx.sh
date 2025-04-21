@@ -56,25 +56,53 @@ server {
 }
 EOF
 
-# 6. nginx ログフォーマットにポート番号追加
-sed -i '/http {/a \
+# 6. nginx ログフォーマットにポート番号追加（重複防止）
+
+if ! grep -q "log_format with_port" /etc/nginx/nginx.conf; then
+  sed -i '/http {/a \
     log_format with_port '\''$remote_addr - $remote_user [$time_local] '\''\
                      '\''"$request" $status $body_bytes_sent '\''\
                      '\''port=$server_port '\''\
-                     '\''"$http_referer" "$http_user_agent"'\'';\
+                     '\''"$http_referer" "$http_user_agent"'\'';\n\
     access_log /var/log/nginx/access.log with_port;' /etc/nginx/nginx.conf
+else
+  echo "⚠ log_format with_port は既に定義されています。スキップします。"
+fi
 
 # 7. 表示用HTML作成
+# 1. IP & ホスト名取得
+IP=$(hostname -I | awk '{print $1}')
+HOSTNAME=$(hostname)
+[ -z "$HOSTNAME" ] && HOSTNAME=$(hostnamectl --static 2>/dev/null)
+[ -z "$HOSTNAME" ] && HOSTNAME="(unknown-host)"
+
+# 2. HTML出力
 mkdir -p /var/www/html-http
 mkdir -p /var/www/html-https
-echo '<h1>Welcome to NGINX over HTTP!</h1>' > /var/www/html-http/index.html
-echo '<h1>Welcome to NGINX over HTTPS!</h1>' > /var/www/html-https/index.html
+
+echo "<h1>Welcome to NGINX over HTTP! on $IP</h1></h2><p>Hostname: $HOSTNAME</p></h2>" > /var/www/html-http/index.html
+echo "<h1>Welcome to NGINX over HTTPS! on $IP</h1><h2><p>Hostname: $HOSTNAME</p></h2>" > /var/www/html-https/index.html
+
+
+
+
+
 
 # 8. nginx 自動起動＆反映
 systemctl enable nginx
 nginx -t && systemctl restart nginx
 
+# 実際のIPアドレスを取得（最初のIP）
+IP=$(hostname -I | awk '{print $1}')
+
+# 実際のIPアドレスを取得（最初のIP）
+IP=$(hostname -I | awk '{print $1}')
+
+# 実際のIPアドレスを取得（最初のIP）
+IP=$(hostname -I | awk '{print $1}')
+
 echo "✅ All services installed and configured successfully."
-echo "👉 Squid:        http://<vmip>:8080"
-echo "👉 NGINX HTTP:   http://<vmip>"
-echo "👉 NGINX HTTPS:  https://<vm> (self-signed)"
+echo "👉 Squid:        http://$IP:8080"
+echo "👉 NGINX HTTP:   http://$IP"
+echo "👉 NGINX HTTPS:  https://$IP (self-signed)"
+echo "👉 NGINX access log: /var/log/nginx/access.log"
