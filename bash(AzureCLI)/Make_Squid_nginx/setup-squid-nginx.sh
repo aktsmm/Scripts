@@ -19,9 +19,9 @@ systemctl restart squid
 # 4. nginx: 自己署名証明書作成
 mkdir -p /etc/nginx/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout /etc/nginx/ssl/selfsigned.key \
-  -out /etc/nginx/ssl/selfsigned.crt \
-  -subj "/C=JP/ST=Tokyo/L=Chiyoda/O=ExampleCompany/CN=localhost"
+    -keyout /etc/nginx/ssl/selfsigned.key \
+    -out /etc/nginx/ssl/selfsigned.crt \
+    -subj "/C=JP/ST=Tokyo/L=Chiyoda/O=ExampleCompany/CN=localhost"
 
 # 時刻とシリアル番号生成
 TIME=$(date '+%Y-%m-%d %H:%M:%S')
@@ -37,24 +37,24 @@ server {
     access_log /var/log/nginx/access.log with_headers;
 
     # メイン (/): Acceptヘッダを使ってレスポンス形式を切り替え
-    # Acceptヘッダに "application/json" が含まれる場合にJSONを返します,    # Acceptヘッダーの例: - application/json を含むJSON 応答
+    # Acceptヘッダに "application/json" が含まれる場合にJSONを返します,     # Acceptヘッダーの例: - application/json を含むJSON 応答
     location = / {
         if (\$http_accept ~* "application/json") {
             add_header Content-Type "application/json; charset=UTF-8";
             return 200 '{
-  "ServerAddr": "\$server_addr",
-  "Hostname": "\$hostname",
-  "RemoteAddr": "\$remote_addr",
-  "X-Forwarded-For": "\$http_x_forwarded_for",
-  "X-Real-IP": "\$http_x_real_ip",
-  "Host": "\$host",
-  "User-Agent": "\$http_user_agent",
-  "Referer": "\$http_referer"
+ "ServerAddr": "\$server_addr",
+ "Hostname": "\$hostname",
+ "RemoteAddr": "\$remote_addr",
+ "X-Forwarded-For": "\$http_x_forwarded_for",
+ "X-Real-IP": "\$http_x_real_ip",
+ "Host": "\$host",
+ "User-Agent": "\$http_user_agent",
+ "Referer": "\$http_referer"
 }';
         }
-        # HTMLデフォルト応答
+        # HTMLデフォルト応答 (HTTPSと同じ形式)
         add_header Content-Type "text/html; charset=UTF-8";
-        return 200 "<pre>Welcome to NGINX on \$server_addr (via HTTP, SN:$SN)\nHostname: \$hostname\nRemoteAddr: \$remote_addr\nClientIP: \$http_x_real_ip\nX-Forwarded-For: \$http_x_forwarded_for\nUser-Agent: \$http_user_agent\nReferer: \$http_referer</pre>";
+        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTP, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
     }
 
     # 静的ファイルハンドリング
@@ -77,7 +77,7 @@ server {
     # HTTPS トップページ
     location = / {
         add_header Content-Type "text/html; charset=UTF-8";
-        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(    #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
+        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
     }
 
     # HTTPS 用 各専用エンドポイント
@@ -121,11 +121,11 @@ EOF
 
 # 6. nginx ログフォーマットを正しく追加（重複防止）
 if ! grep -q "log_format with_headers" /etc/nginx/nginx.conf; then
-  sed -i '/http {/a\
+    sed -i '/http {/a\
     log_format with_headers '\''\$remote_addr - \$remote_user [\$time_local] "\$request" \$status \$body_bytes_sent "\$http_referer" "\$http_user_agent" XFF="\$http_x_forwarded_for" XRI="\$http_x_real_ip" HOST="\$http_host" port=\$server_port'\'';\
     access_log /var/log/nginx/access.log with_headers;' /etc/nginx/nginx.conf
 else
-  echo "⚠ log_format with_headers は既に定義されています。スキップします。"
+    echo "⚠ log_format with_headers は既に定義されています。スキップします。"
 fi
 
 # 7. ログローテーションの設定
@@ -171,8 +171,8 @@ nginx -t && systemctl restart nginx
 # 10. IP表示
 IP=$(hostname -I | awk '{print $1}')
 echo "✅ All services installed and configured successfully."
-echo "👉 Squid:        http://$IP:8080"
-echo "👉 NGINX HTTP:   http://$IP"
-echo "👉 NGINX HTTPS:  https://$IP (self-signed)"
+echo "👉 Squid:       http://$IP:8080"
+echo "👉 NGINX HTTP:    http://$IP"
+echo "👉 NGINX HTTPS:   https://$IP (self-signed)"
 echo "👉 NGINX access log: /var/log/nginx/access.log"
 echo "👉 Squid access log: /var/log/squid/access.log"
