@@ -23,7 +23,6 @@ packages:
   - nginx
   - nodejs
   - npm
-# ... (中略)
 runcmd:
   - service nginx restart
   - cd "/home/${VM_USERNAME}/myapp"
