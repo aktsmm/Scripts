@@ -1,88 +1,103 @@
-# Squid + NGINX 自動構成スクリプト (Ubuntu用)
 
-このスクリプトは、Ubuntuベースのサーバーにおいて、以下の構成を自動化するためのものです。
+# 🛠 NGINX + Squid ローカル検証環境セットアップスクリプト
 
-- Squid（HTTPプロキシ）をポート `8080` で構成し、すべてのアクセスを許可
-- nginx を HTTP (`80`) / HTTPS (`443`) で構成
-- HTTPS は自己署名証明書で実装
-- ログにポート番号を記録
-- HTTP/HTTPS それぞれに異なる HTML を表示（実際のIPとホスト名も含む）
-- 両サービスを OS 起動時に自動起動するよう設定
+このスクリプトは、以下の環境を自動で構成するデバッグ用ツールです：
+
+- NGINX（HTTP/HTTPS）＋Squid（プロキシ）
+- 自己署名証明書によるSSLオフロード環境
+- 各種ヘッダー情報を確認するためのL7エンドポイントを提供
+- アクセスログの詳細出力（XFFやUser-Agentなど）
+- ログローテーション設定付き
 
 ---
 
-## 🔧 セットアップ手順
+## 🧩 利用シナリオ
 
-### 1. スクリプトファイルを作成
+このスクリプトで構成される環境は、次のような用途に適しています：
 
-```bash
-nano setup-squid-nginx.sh
+- **SSLオフロードの検証**（自己署名証明書付き）
+- **X-Forwarded-For, X-Real-IP などのヘッダー動作検証**
+- **Squidプロキシ経由でのL7確認**
+- **PowerShellやcurlを使ったテスト通信のレスポンス比較**
+- **NATやReverse Proxy動作検証前の簡易環境構築**
+
+---
+
+## 📡 提供されるエンドポイント一覧
+
+| パス      | 概要                                           | 応答形式        |
+|-----------|------------------------------------------------|-----------------|
+| `/`       | Acceptヘッダに応じてHTMLまたはJSONで応答       | HTML or JSON    |
+| `/h`      | ヘッダー情報一覧（XFF, UA, Refererなど）       | HTML (preタグ)  |
+| `/s`      | ServerAddrとホスト名                           | text/plain      |
+| `/ua`     | User-Agent のみ表示                            | text/plain      |
+| `/r`      | Referer のみ表示                               | text/plain      |
+| `/ip`     | RemoteAddrとX-Real-IPを表示                     | text/plain      |
+| `/all`    | 上記すべての情報をまとめて表示                 | HTML (preタグ)  |
+
+---
+
+## 🔍 各種ヘッダーの意味
+
+| ヘッダー名         | 意味                                                                 |
+|--------------------|----------------------------------------------------------------------|
+| `X-Forwarded-For`  | プロキシを通過してきた元のクライアントIP（複数の場合カンマ区切り） |
+| `X-Real-IP`        | 実際のクライアントのIPアドレス                                      |
+| `Host`             | リクエスト先のホスト名                                               |
+| `RemoteAddr`       | TCP接続元のIPアドレス（サーバ視点）                                  |
+| `User-Agent`       | ブラウザやツールのクライアント情報                                  |
+| `Referer`          | 遷移元のURL                                                          |
+
+---
+
+## 🧪 PowerShell / curl によるテスト例
+
+### PowerShell（Windows）
+
+```powershell
+# IPを変えてください
+$ip = "https://YOUR_NGINX_IP"
+
+# JSONで受け取りたい場合
+Invoke-WebRequest -Uri "$ip/" -Headers @{Accept="application/json"} | Select-Object -ExpandProperty Content
+
+# ヘッダー一覧確認（/h）
+Invoke-WebRequest -Uri "$ip/h" | Select-Object -ExpandProperty Content
+
+# XFFを送って検証する例
+Invoke-WebRequest -Uri "$ip/ip" -Headers @{"X-Forwarded-For"="1.2.3.4"} | Select-Object -ExpandProperty Content
 ```
 
-内容を貼り付けて、保存（`Ctrl+O` → `Enter` → `Ctrl+X`）
-
----
-
-### 2. 実行権限を付与し、実行
+### curl（Linux/WSLなど）
 
 ```bash
-chmod +x setup-squid-nginx.sh
-sudo ./setup-squid-nginx.sh
+curl -H "Accept: application/json" https://YOUR_NGINX_IP/
+curl https://YOUR_NGINX_IP/h
+curl -H "X-Forwarded-For: 8.8.8.8" https://YOUR_NGINX_IP/ip
 ```
 
 ---
 
-## ✅ 構成内容の詳細
+## 🔧 その他構成
 
-### Squid（HTTPプロキシ）
+- アクセスログ: `/var/log/nginx/access.log`（`log_format with_headers` で詳細記録）
+- Squid ログ: `/var/log/squid/access.log`
+- 自動起動設定済み: `nginx`, `squid`
+- 自己署名証明書: `/etc/nginx/ssl/selfsigned.crt`, `.key`
 
-| 項目         | 内容                      |
-|--------------|---------------------------|
-| ポート       | 8080                      |
-| アクセス制御 | 全部許可（`allow all`）  |
-| 自動起動     | 有効                      |
+---
 
-プロキシ動作確認：
+## ✅ 構成後の確認メッセージ例
 
-```bash
-curl -x http://localhost:8080 http://example.com
+```
+✅ All services installed and configured successfully.
+👉 Squid:       http://<IP>:8080
+👉 NGINX HTTP:    http://<IP>
+👉 NGINX HTTPS:   https://<IP> (self-signed)
+👉 NGINX access log: /var/log/nginx/access.log
+👉 Squid access log: /var/log/squid/access.log
 ```
 
----
-
-### nginx（HTTP/HTTPS）
-
-| 項目         | 内容                                               |
-|--------------|----------------------------------------------------|
-| ポート       | HTTP: `80` / HTTPS: `443`                         |
-| SSL証明書    | 自己署名（1年間有効）                             |
-| リダイレクト | HTTP→HTTPS の強制なし                             |
-| ログ         | `$server_port` を含んだ独自ログフォーマットを追加 |
-| 自動起動     | 有効                                               |
-
-アクセス確認：
-
-```bash
-curl http://localhost
-curl -k https://localhost
-```
-
----
-
-## 📝 表示されるHTML内容
-
-| アクセス方法 | 表示内容                                          |
-|--------------|---------------------------------------------------|
-| HTTP (`80`)  | `Welcome to NGINX over HTTP! on <IP>`            |
-| HTTPS (`443`)| `Welcome to NGINX over HTTPS! on <IP>`           |
-|              | ホスト名も `<p>Hostname: <HOSTNAME></p>` として表示されます |
-
-HTMLは以下に保存されています：
-
-- `/var/www/html-http/index.html`
-- `/var/www/html-https/index.html`
-
----
 
 ## 🔍 nginx アクセスログの確認（ポート番号付き）
 
