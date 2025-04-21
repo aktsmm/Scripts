@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# 古い設定ファイルを削除
+rm -f /etc/nginx/sites-enabled/default
+rm -f /etc/nginx/conf.d/debug.conf
+
 # 1. パッケージ更新とインストール
 apt update -y
 apt install -y squid nginx openssl
@@ -12,20 +16,36 @@ acl all src all
 http_access allow all
 EOF
 
-# 3. Squid 自動起動＆起動
-systemctl enable squid
-systemctl restart squid
-
-# 4. nginx: 自己署名証明書作成
+# 3. nginx: 自己署名証明書作成
 mkdir -p /etc/nginx/ssl
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/selfsigned.key \
     -out /etc/nginx/ssl/selfsigned.crt \
     -subj "/C=JP/ST=Tokyo/L=Chiyoda/O=ExampleCompany/CN=localhost"
 
-# 時刻とシリアル番号生成
+# 4.時刻とシリアル番号生成
 TIME=$(date '+%Y-%m-%d %H:%M:%S')
 SN=$(echo -n "$TIME" | md5sum | cut -c1-8)
+
+# 虹の色 (黄色を除く)
+RAINBOW_COLORS=("red" "orange" "green" "blue" "indigo" "violet")
+TARGET_STRING="NGINX"
+
+# 文字列を一文字ずつランダムな虹の色で装飾する関数
+colorize_string() {
+    local str="$1"
+    local colored_str=""
+    local len=${#str}
+    for ((i=0; i<len; i++)); do
+        local char="${str:$i:1}"
+        local color="${RAINBOW_COLORS[$((RANDOM % ${#RAINBOW_COLORS[@]}))]}"
+        colored_str+="<span style=\"color: ${color};\">${char}</span>"
+    done
+    echo "$colored_str"
+}
+
+# 色付けされた NGINX 文字列を生成
+COLORED_NGINX=$(colorize_string "$TARGET_STRING")
 
 # 5. nginx: HTTP/HTTPS 構成（リダイレクトなし）+ access_log + charset + add_header
 cat <<EOF > /etc/nginx/sites-enabled/default
@@ -36,30 +56,14 @@ server {
     default_type text/html;
     access_log /var/log/nginx/access.log with_headers;
 
-    # メイン (/): Acceptヘッダを使ってレスポンス形式を切り替え
-    # Acceptヘッダに "application/json" が含まれる場合にJSONを返します,     # Acceptヘッダーの例: - application/json を含むJSON 応答
-    location = / {
-        if (\$http_accept ~* "application/json") {
-            add_header Content-Type "application/json; charset=UTF-8";
-            return 200 '{
- "ServerAddr": "\$server_addr",
- "Hostname": "\$hostname",
- "RemoteAddr": "\$remote_addr",
- "X-Forwarded-For": "\$http_x_forwarded_for",
- "X-Real-IP": "\$http_x_real_ip",
- "Host": "\$host",
- "User-Agent": "\$http_user_agent",
- "Referer": "\$http_referer"
-}';
-        }
-        # HTMLデフォルト応答 (HTTPSと同じ形式)
+     location = / {
         add_header Content-Type "text/html; charset=UTF-8";
-        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTP, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
+        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to ${COLORED_NGINX} on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
     }
-    # HTTP トップページ
-    location = / {
+
+    location = /h {
         add_header Content-Type "text/html; charset=UTF-8";
-        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
+        return 200 "<pre>X-Forwarded-For: \$http_x_forwarded_for\nX-Real-IP: \$http_x_real_ip\nHost: \$host\nRemoteAddr: \$remote_addr\nUser-Agent: \$http_user_agent\nReferer: \$http_referer</pre>";
     }
 
     location = /s {
@@ -87,7 +91,6 @@ server {
         return 200 "<pre>ServerAddr: \$server_addr\nHostname: \$hostname\nRemoteAddr: \$remote_addr\nClientIP: \$http_x_real_ip\nX-Forwarded-For: \$http_x_forwarded_for\nX-Real-IP: \$http_x_real_ip\nHost: \$host\nUser-Agent: \$http_user_agent\nReferer: \$http_referer</pre>";
     }
 
-    # 静的ファイルハンドリング
     location / {
         try_files \$uri \$uri/ =404;
     }
@@ -104,13 +107,11 @@ server {
     charset utf-8;
     default_type text/html;
 
-    # HTTPS トップページ
     location = / {
         add_header Content-Type "text/html; charset=UTF-8";
-        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to NGINX on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
+        return 200 '<!DOCTYPE html>\n<html lang="ja">\n<head>\n  <meta charset="UTF-8">\n  <title>NGINX Debug Top</title>\n</head>\n<body>\n<h1>Welcome to ${COLORED_NGINX} on \$server_addr (via HTTPS, SN:$SN)</h1>\n<h2>Hostname: \$hostname</h2>\n<hr>\n<h3>📘 エンドポイント一覧:</h3>\n<ul>\n  <li><a href="/">/</a> - Acceptヘッダに応じてHTMLまたはJSON応答(   #   - application/json を含む 場合 JSON 応答)</li>\n  <li><a href="/h">/h</a> - HTTPヘッダ情報一覧</li>\n  <li><a href="/s">/s</a> - ServerAddrとHostname</li>\n  <li><a href="/ua">/ua</a> - User-Agentのみ表示</li>\n  <li><a href="/r">/r</a> - Refererヘッダー表示</li>\n  <li><a href="/ip">/ip</a> - RemoteAddrとClientIP表示</li>\n  <li><a href="/all">/all</a> - 全情報をまとめて表示</li>\n</ul>\n<hr>\n<h3>📑 ヘッダー情報の説明:</h3>\n<ul>\n  <li><b>X-Forwarded-For</b>: プロキシを通過してきた元のIPアドレス</li>\n  <li><b>X-Real-IP</b>: 実際のクライアントIPアドレス</li>\n  <li><b>Host</b>: リクエスト先のホスト名</li>\n  <li><b>RemoteAddr</b>: TCP接続元のIPアドレス</li>\n  <li><b>User-Agent</b>: クライアントのソフトウェア情報</li>\n  <li><b>Referer</b>: リンク元のURL</li>\n</ul>\n</body>\n</html>';
     }
 
-    # HTTPS 用 各専用エンドポイント
     location = /h {
         add_header Content-Type "text/html; charset=UTF-8";
         return 200 "<pre>X-Forwarded-For: \$http_x_forwarded_for\nX-Real-IP: \$http_x_real_ip\nHost: \$host\nRemoteAddr: \$remote_addr\nUser-Agent: \$http_user_agent\nReferer: \$http_referer</pre>";
@@ -146,8 +147,6 @@ server {
     }
 }
 EOF
-
-
 
 # 6. nginx ログフォーマットを正しく追加（重複防止）
 if ! grep -q "log_format with_headers" /etc/nginx/nginx.conf; then
@@ -198,7 +197,11 @@ mkdir -p /var/www/html-http /var/www/html-https
 systemctl enable nginx
 nginx -t && systemctl restart nginx
 
-# 10. IP表示
+# 10. Squid 自動起動＆反映
+systemctl enable squid
+systemctl restart squid
+
+# 11. IP表示
 IP=$(hostname -I | awk '{print $1}')
 echo "✅ All services installed and configured successfully."
 echo "👉 Squid:       http://$IP:8080"
