@@ -10,6 +10,19 @@
 - ログローテーション設定付き
 
 ---
+## 利用ポート
+SquidはデフォルトでHTTPプロキシ（透過なし）としてポート 8080 をリッスンします。
+NGINXはHTTP (80), HTTPS (443) 両方で待ち受け、自己署名SSL証明書を利用してHTTPSを提供します。
+ufw や firewalld を使っている環境では、これらのポートを開放しておく必要があります。
+
+### LISTEN PORT 確認
+
+```bash
+netstat -tulnp
+```
+```bash
+lsof -i -P -n | grep LISTEN
+```
 
 ## 🧩 利用シナリオ
 
