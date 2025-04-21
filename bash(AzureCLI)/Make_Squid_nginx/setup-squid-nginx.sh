@@ -70,22 +70,18 @@ else
 fi
 
 # 7. 表示用HTML作成
-# 1. IP & ホスト名取得
+## 1. IP & ホスト名取得
 IP=$(hostname -I | awk '{print $1}')
 HOSTNAME=$(hostname)
 [ -z "$HOSTNAME" ] && HOSTNAME=$(hostnamectl --static 2>/dev/null)
 [ -z "$HOSTNAME" ] && HOSTNAME="(unknown-host)"
 
-# 2. HTML出力
+## 2. HTML出力
 mkdir -p /var/www/html-http
 mkdir -p /var/www/html-https
 
-echo "<h1>Welcome to NGINX over HTTP! on $IP</h1></h2><p>Hostname: $HOSTNAME</p></h2>" > /var/www/html-http/index.html
+echo "<h1>Welcome to NGINX over HTTP! on $IP</h1><h2><p>Hostname: $HOSTNAME</p></h2>" > /var/www/html-http/index.html
 echo "<h1>Welcome to NGINX over HTTPS! on $IP</h1><h2><p>Hostname: $HOSTNAME</p></h2>" > /var/www/html-https/index.html
-
-
-
-
 
 
 # 8. nginx 自動起動＆反映
