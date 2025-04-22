@@ -9,6 +9,10 @@
 - アクセスログの詳細出力（XFFやUser-Agentなど）
 - ログローテーション設定付き
 
+## イメージ図
+
+![Image](https://github.com/user-attachments/assets/687241c6-966f-42d6-92c9-b9d1177a7a4a)
+
 ---
 ## 利用ポート
 SquidはデフォルトでHTTPプロキシ（透過なし）としてポート 8080 をリッスンします。
