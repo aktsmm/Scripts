@@ -1,5 +1,11 @@
 ## このBashスクリプトは、Azure上に仮想マシンを作成し、nginxとNode.jsを使用して簡単なWebサーバーをセットアップするものです。
 
+このスクリプトは Azure 上に Ubuntu VM を立て、その中で次の構成を実現します：
+* nginx をインストール・起動
+* Express.js アプリ（Node.js） を /home/test-admin/myapp/index.js に配置
+* nginx を リバースプロキシとして設定し、http://localhost:3000（Express.js）に転送
+* 最終的にブラウザで http://<パブリックIP> にアクセスすると、Express.js の出力が見える構成
+
 ## 説明
 
 変数の設定:
@@ -14,7 +20,7 @@ VM_PASSWORD='WindowsAzure!2010'
 スクリプトで使用する各種変数を設定しています。これらの変数には、リソースグループ、場所、仮想マシンの名前、サイズ、イメージ、ユーザー名、パスワードなどが含まれています。
 cloud-init ファイルの生成:
 
-bash
+```bash
 Copy code
 cat <<EOF >cloud-init.txt
 #cloud-config
@@ -50,4 +56,6 @@ az vm create --name $VM_NAME -g $RG -l $LOC \
     --admin-username $VM_USERNAME \
     --admin-password "$VM_PASSWORD" \
     --custom-data cloud-init.txt
+```
+
 最後に、Azure CLIコマンドを使用して公開IP、NIC（ネットワーク インターフェイス カード）、および仮想マシンを作成しています。--custom-dataオプションを使用して、cloud-initファイルをカスタムデータとして仮想マシンに渡しています。
