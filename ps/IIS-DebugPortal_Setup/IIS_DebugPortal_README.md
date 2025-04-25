@@ -25,6 +25,11 @@ Ubuntu + nginx + Squid 相当のヘッダ確認環境を Windows 上に再現す
 
 ---
 
+## ブラウザでの確認例
+![Image](https://github.com/user-attachments/assets/86d5524b-dfcf-4805-9cb6-3239820e1402)
+
+![Image](https://github.com/user-attachments/assets/703d9d87-866c-4137-bef2-bea5b26c0c28)
+
 ## 🧪 確認コマンド例
 
 ### ✅ HTML 出力を確認
@@ -50,7 +55,7 @@ $headers = @{
 }
 Invoke-RestMethod -Uri 'http://localhost' -Headers $headers | Format-List *
 ```
-
+![Image](https://github.com/user-attachments/assets/2fd40ed1-ef50-4222-9a6f-5753eb9b73f0)
 ---
 
 ## 📂 ログファイル確認（tail -f 相当）
