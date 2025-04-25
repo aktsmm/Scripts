@@ -43,7 +43,7 @@ Write-Host "▶ 3. Creating self-signed certificate..." -ForegroundColor Cyan
 $existingCert = Get-ChildItem Cert:\LocalMachine\My |
     Where-Object { $_.Subject -eq $CertSubject }
 if ($existingCert) { $existingCert | Remove-Item }
-$cert = New-SelfSignedCertificate -DnsName "localhost" 
+$cert = New-SelfSignedCertificate -DnsName "localhost" `
     -CertStoreLocation "Cert:\LocalMachine\My"
 
 # ========================
@@ -69,12 +69,12 @@ New-Item $bindingPath -Thumbprint $cert.Thumbprint -SSLFlags 0
 Write-Host "▶ 5. Configuring IIS log custom fields..." -ForegroundColor Cyan
 
 # (A) W3C ログ形式に設定
-Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' 
-  -filter "system.applicationHost/sites/site[@name='$SiteName']/logFile" 
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.applicationHost/sites/site[@name='$SiteName']/logFile" `
   -name "logFormat" -value "W3C"
 
 # (B) 既存の customFields をすべてクリア
-Clear-WebConfiguration -pspath 'MACHINE/WEBROOT/APPHOST' 
+Clear-WebConfiguration -pspath 'MACHINE/WEBROOT/APPHOST' `
   -filter "system.applicationHost/sites/site[@name='$SiteName']/logFile/customFields"
 
 # (C) 追加するカスタムフィールド定義
@@ -91,8 +91,8 @@ $customFields = @(
 )
 
 foreach ($f in $customFields) {
-    Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' 
-      -filter "system.applicationHost/sites/site[@name='$SiteName']/logFile/customFields" 
+    Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+      -filter "system.applicationHost/sites/site[@name='$SiteName']/logFile/customFields" `
       -name "." -value $f
 }
 
@@ -113,9 +113,6 @@ $SN    = $hash.Substring(0,8)
 # ========================
 # 7. index.asp の生成（SN 埋め込み＋JSON/HTML 切り替え）
 # ========================
-# ========================
-# 7. index.asp の生成（SN 埋め込み＋JSON/HTML 切り替え＋PublicIP＋説明追加）
-# ========================
 Write-Host "▶ 7. Creating index.asp for header info (SN=$SN)..." -ForegroundColor Cyan
 $utf8Bom = New-Object System.Text.UTF8Encoding($true)
 
@@ -130,35 +127,36 @@ $asp = @"
   If LCase(Request.QueryString("format")) = "json" Then wantJson = True
   If InStr(Request.ServerVariables("HTTP_ACCEPT"), "application/json") > 0 Then wantJson = True
 
+  ' Fetch public IP from ipify
+  Dim xmlhttp, jsonText, ipPos, globalIP
+  Set xmlhttp = Server.CreateObject("MSXML2.ServerXMLHTTP")
+  xmlhttp.open "GET", "https://api.ipify.org?format=json", False
+  xmlhttp.send
+  jsonText = xmlhttp.responseText
+  ipPos = InStr(jsonText, """ip"":""")
+  If ipPos > 0 Then
+    globalIP = Mid(jsonText, ipPos + 6, Len(jsonText) - (ipPos + 6) - 1)
+  Else
+    globalIP = "N/A"
+  End If
+
   If wantJson Then
     Response.ContentType = "application/json"
     Dim json
     json = "{"
-    json = json & """ServerAddr"":"""      & Request.ServerVariables("LOCAL_ADDR") & """," 
-    json = json & """Hostname"":"""        & Request.ServerVariables("SERVER_NAME") & """," 
-    json = json & """RemoteAddr"":"""      & Request.ServerVariables("REMOTE_ADDR") & """," 
-    json = json & """ClientIP"":"""        & Request.ServerVariables("HTTP_X_REAL_IP") & """," 
-    json = json & """X-Forwarded-For"":""" & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & """," 
-    json = json & """X-Real-IP"":"""       & Request.ServerVariables("HTTP_X_REAL_IP") & """," 
-    json = json & """Host"":"""            & Request.ServerVariables("HTTP_HOST") & """," 
-    json = json & """UserAgent"":"""       & Request.ServerVariables("HTTP_USER_AGENT") & """," 
-    json = json & """Referer"":"""         & Request.ServerVariables("HTTP_REFERER") & """" 
+    json = json & """ServerAddrPrivater"":""" & Request.ServerVariables("LOCAL_ADDR") & ""","
+    json = json & """ServerAddrPublicIP"":""" & globalIP & ""","
+    json = json & """Hostname"":"""           & Request.ServerVariables("SERVER_NAME") & ""","
+    json = json & """RemoteAddr"":"""         & Request.ServerVariables("REMOTE_ADDR") & ""","
+    json = json & """ClientIP"":"""           & Request.ServerVariables("HTTP_X_REAL_IP") & ""","
+    json = json & """X-Forwarded-For"":"""    & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & ""","
+    json = json & """X-Real-IP"":"""          & Request.ServerVariables("HTTP_X_REAL_IP") & ""","
+    json = json & """Host"":"""               & Request.ServerVariables("HTTP_HOST") & ""","
+    json = json & """UserAgent"":"""          & Request.ServerVariables("HTTP_USER_AGENT") & ""","
+    json = json & """Referer"":"""            & Request.ServerVariables("HTTP_REFERER") & """"
     json = json & "}"
     Response.Write json
   Else
-    ' Fetch public IP from ipify
-    Dim xmlhttp, jsonText, ipPos, globalIP
-    Set xmlhttp = Server.CreateObject("MSXML2.ServerXMLHTTP")
-    xmlhttp.open "GET", "https://api.ipify.org?format=json", False
-    xmlhttp.send
-    jsonText = xmlhttp.responseText
-    ipPos = InStr(jsonText, """ip"":""")
-    If ipPos > 0 Then
-      globalIP = Mid(jsonText, ipPos + 6, Len(jsonText) - (ipPos + 6) - 1)
-    Else
-      globalIP = "N/A"
-    End If
-
     Response.ContentType = "text/html"
     Dim o, titleChars, colors, i, colorCount
     titleChars = Array("I","I","S"," ","D","e","b","u","g"," ","P","o","r","t","a","l")
@@ -202,8 +200,8 @@ $asp = @"
 
     '---- Header Descriptions ----
     o = o & "<hr><h2>Header Descriptions</h2><dl>"
-    o = o & "<dt>ServerAddr</dt><dd>IP address on which the server is listening</dd>"
-    o = o & "<dt>PublicIP</dt><dd>Public IP address retrieved from api.ipify.org</dd>"
+    o = o & "<dt>ServerAddrPrivater</dt><dd>IP address on which the server is listening</dd>"
+    o = o & "<dt>ServerAddrPublicIP</dt><dd>Public IP address retrieved from api.ipify.org</dd>"
     o = o & "<dt>Hostname</dt><dd>Requested host name</dd>"
     o = o & "<dt>RemoteAddr</dt><dd>Client IP address as seen by the server</dd>"
     o = o & "<dt>ClientIP</dt><dd>Original client IP when behind a proxy</dd>"
@@ -234,17 +232,18 @@ $writer.Close()
 
 
 
+
 # ========================
 # 8. Default Document 設定（重複回避）
 # ========================
 Write-Host "▶ 8. Configuring Default Document..." -ForegroundColor Cyan
-Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' 
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
   -filter "system.webServer/defaultDocument" -name enabled -value true
-Remove-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' 
-  -filter "system.webServer/defaultDocument/files" -name "." 
+Remove-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/defaultDocument/files" -name "." `
   -AtElement @{value="index.asp"} -ErrorAction SilentlyContinue
-Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' 
-  -filter "system.webServer/defaultDocument/files" -name "." 
+Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/defaultDocument/files" -name "." `
   -value @{value="index.asp"}
 
 # ========================
@@ -255,9 +254,9 @@ $adminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A0C5262
 $userKey  = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A0C52629-1C36-4d58-AF90-F6C1BD1CE885}"
 If (Test-Path $adminKey) { Set-ItemProperty -Path $adminKey -Name "IsInstalled" -Value 0 }
 If (Test-Path $userKey)  { Set-ItemProperty -Path $userKey  -Name "IsInstalled" -Value 0 }
-Set-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap" 
+Set-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap" `
   -Name "IEHarden" -Value 0 -ErrorAction SilentlyContinue
-Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" 
+Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
   -Name "NoWelcomeScreen" -Value 1 -Force -ErrorAction SilentlyContinue
 
 # ========================
@@ -271,7 +270,7 @@ $rules = @(
 )
 foreach ($r in $rules) {
     if (-not (Get-NetFirewallRule -DisplayName $r.Name -ErrorAction SilentlyContinue)) {
-        New-NetFirewallRule -DisplayName $r.Name 
+        New-NetFirewallRule -DisplayName $r.Name `
           -Direction Inbound -Protocol TCP -LocalPort $r.Port -Action Allow
     }
 }
@@ -282,5 +281,5 @@ foreach ($r in $rules) {
 Write-Host "▶ 11. Restarting IIS..." -ForegroundColor Cyan
 iisreset
 
-Write-Host "n✅ Setup Complete!"
+Write-Host "`n✅ Setup Complete!"
 Write-Host "👉 ブラウザで https://<サーバーIP>/?format=json または通常アクセスで HTML を確認できます"
