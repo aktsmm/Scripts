@@ -5,8 +5,17 @@ set -e
 rm -f /etc/nginx/sites-enabled/default
 rm -f /etc/nginx/conf.d/debug.conf
 
-# 1. パッケージ更新とインストール
-apt update -y
+#!/bin/bash
+set -e
+
+# 1. リポジトリを明示的に追加（念のため）
+add-apt-repository universe -y
+
+# 2. パッケージキャッシュ更新 （強制）
+apt-get clean
+apt-get update -y
+apt-get upgrade -y
+
 apt install -y squid nginx openssl
 
 # 2. Squid 設定: 全通過（ポート8080）
