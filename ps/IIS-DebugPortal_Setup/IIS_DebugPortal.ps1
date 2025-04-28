@@ -249,15 +249,24 @@ Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
 # ========================
 # 9. IE Enhanced Security 無効化
 # ========================
-Write-Host "▶ 9. Disabling IE Enhanced Security..." -ForegroundColor Cyan
-$adminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A0C52629-1C36-4d58-AF90-F6C1BD1CE884}"
-$userKey  = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A0C52629-1C36-4d58-AF90-F6C1BD1CE885}"
-If (Test-Path $adminKey) { Set-ItemProperty -Path $adminKey -Name "IsInstalled" -Value 0 }
-If (Test-Path $userKey)  { Set-ItemProperty -Path $userKey  -Name "IsInstalled" -Value 0 }
-Set-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap" `
-  -Name "IEHarden" -Value 0 -ErrorAction SilentlyContinue
-Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
-  -Name "NoWelcomeScreen" -Value 1 -Force -ErrorAction SilentlyContinue
+#----------------  Disable-IE ESC  ----------------
+#----------------  Disable-IE ESC  ----------------
+$base = 'HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components'
+$adminKey = "$base\{A509B1A7-37EF-4B3F-8CFC-4F3A74704073}" # Administrators
+$userKey  = "$base\{A509B1A8-37EF-4B3F-8CFC-4F3A74704073}" # Users
+
+@($adminKey, $userKey) | ForEach-Object {
+    if (Test-Path $_) {
+        # ① ESC を無効化
+        Set-ItemProperty -Path $_ -Name IsInstalled -Value 0   -Force
+        # ② 初回ログオン時に ESC を再び有効化させる起動コマンドを無効化
+        Set-ItemProperty -Path $_ -Name StubPath   -Value ''  -Force
+    }
+}
+
+Write-Host '✔ IE ESC disabled for both Administrators and Users. Please reopen Server Manager or relogin to reflect the change.' -ForegroundColor Cyan
+#--------------------------------------------------
+
 
 # ========================
 # 10. ファイアウォール開放
