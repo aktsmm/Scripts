@@ -31,7 +31,7 @@ function Test-TaskbarPinned {
     return $false
 }
 
-function Pin-ExeToTaskbar {
+function Add-TaskbarPin  {
     param([string]$ExePath)
 
     if (Test-TaskbarPinned $ExePath) {
@@ -55,7 +55,7 @@ function Pin-ExeToTaskbar {
 }
 
 foreach ($app in $AppsToPin) {
-    if (Test-Path $app) { Pin-ExeToTaskbar $app } else { Write-Warning "$app が見つかりませんでした" }
+    if (Test-Path $app) { Add-TaskbarPin  $app } else { Write-Warning "$app が見つかりませんでした" }
 }
 
 #--------------------------------------------------------------------
