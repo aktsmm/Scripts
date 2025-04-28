@@ -38,7 +38,7 @@ SN=$(echo -n "$TIME" | md5sum | cut -c1-8)
 
 # 虹の色 (黄色を除く)
 RAINBOW_COLORS=("red" "orange" "green" "blue" "indigo" "violet")
-TARGET_STRING="NGINX"
+TARGET_STRING="NGINX Debug Portal"
 
 # 文字列を一文字ずつランダムな虹の色で装飾する関数
 colorize_string() {
