@@ -8,18 +8,40 @@ rm -f /etc/nginx/conf.d/debug.conf
 #!/bin/bash
 set -e
 
+# --- APT安全化処理 Start ---
+
+echo "▶ Checking and repairing /etc/apt/sources.list if necessary..."
+
+# バックアップ
+cp -f /etc/apt/sources.list /etc/apt/sources.list.bak || true
+
+# apt updateチェック
+if ! apt-get update -o Debug::NoLocking=1 > /dev/null 2>&1; then
+  echo "⚠ apt update failed. Repairing sources.list..."
+  
+  # 壊れた行を除去（deb行だけ残す）
+  sed -i '/^deb /!d' /etc/apt/sources.list
+  
+  echo "✔ sources.list cleaned. Retrying apt update..."
+fi
+
+# 再試行
+apt-get clean || true
+apt-get update -y || echo "⚠ apt update still failed, continuing."
+
+# --- APT安全化処理 End ---
+
 # 1. リポジトリを明示的に追加（念のため）
-add-apt-repository -y universe
+add-apt-repository -y universe || echo "⚠ universe repo already enabled or failed, continuing."
 
-# 2. パッケージキャッシュ更新 （強制）
-apt-get clean
-apt-get update -y
-apt-get upgrade -y
-apt-get update -y
-apt-get dist-upgrade -y
-apt install -y squid nginx openssl
+# 2. パッケージキャッシュ更新・アップグレード
+apt-get clean || true
+apt-get update -y || echo "⚠ apt update failed, continuing."
+apt-get upgrade -y || echo "⚠ apt upgrade failed, continuing."
+apt-get dist-upgrade -y || echo "⚠ apt dist-upgrade failed, continuing."
+apt install -y squid nginx openssl || echo "⚠ package install failed, continuing."
 
-# 2. Squid 設定: 全通過（ポート8080）
+# 2-1. Squid 設定: 全通過（ポート8080）
 cat <<EOF > /etc/squid/squid.conf
 http_port 8080
 acl all src all
