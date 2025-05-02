@@ -22,6 +22,18 @@ $SiteName    = "Default Web Site"
 $WebRoot     = "C:\inetpub\wwwroot"
 $CertSubject = "CN=localhost"
 
+## Error Message 表示設定
+
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/httpErrors" -name errorMode -value "Detailed"
+
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/asp" -name "scriptErrorSentToBrowser" -value "True"
+
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/asp" -name "scriptErrorMessage" -value "ASP Error"
+
+
 # ========================
 # 1. IIS 機能インストール
 # ========================
@@ -83,7 +95,6 @@ $customFields = @(
   @{ logFieldName="ServerAddr";       sourceName="LOCAL_ADDR";        sourceType="ServerVariable" },
   @{ logFieldName="Hostname";         sourceName="SERVER_NAME";       sourceType="ServerVariable" },
   @{ logFieldName="RemoteAddr";       sourceName="REMOTE_ADDR";       sourceType="ServerVariable" },
-  @{ logFieldName="ClientIP";         sourceName="HTTP_X_REAL_IP";    sourceType="RequestHeader"   },
   @{ logFieldName="X-Forwarded-For";  sourceName="X-Forwarded-For";   sourceType="RequestHeader"   },
   @{ logFieldName="X-Real-IP";        sourceName="X-Real-IP";         sourceType="RequestHeader"   },
   @{ logFieldName="HostHeader";       sourceName="Host";              sourceType="RequestHeader"   },
@@ -153,18 +164,19 @@ On Error GoTo 0
   If wantJson Then
     Response.ContentType = "application/json"
     Dim json
-    json = "{"
-    json = json & """ServerAddrPrivateIP"":""" & Request.ServerVariables("LOCAL_ADDR") & ""","
-    json = json & """ServerAddrPublicIP"":""" & globalIP & ""","
-    json = json & """HostnameFQDN"":""" & "$FQDN" & ""","
-    json = json & """RemoteAddr"":"""         & Request.ServerVariables("REMOTE_ADDR") & ""","
-    json = json & """ClientIP"":"""           & Request.ServerVariables("HTTP_X_REAL_IP") & ""","
-    json = json & """X-Forwarded-For"":"""    & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & ""","
-    json = json & """X-Real-IP"":"""          & Request.ServerVariables("HTTP_X_REAL_IP") & ""","
-    json = json & """Host"":"""               & Request.ServerVariables("HTTP_HOST") & ""","
-    json = json & """UserAgent"":"""          & Request.ServerVariables("HTTP_USER_AGENT") & ""","
-    json = json & """Referer"":"""            & Request.ServerVariables("HTTP_REFERER") & """"
-    json = json & "}"
+  json = "{"
+  json = json & """HostnameFQDN"":""" & "$FQDN" & """," ' ①
+  json = json & """ServerAddrPrivateIP"":""" & Request.ServerVariables("LOCAL_ADDR") & """," ' ②
+  json = json & """ServerAddrPublicIP"":""" & globalIP & """," ' ③
+  json = json & """RemoteAddr"":""" & Request.ServerVariables("REMOTE_ADDR") & """," ' ④
+  json = json & """ClientIP"":""" & Request.ServerVariables("HTTP_X_REAL_IP") & """," ' ⑤
+  json = json & """X-Forwarded-For"":""" & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & """," ' ⑥
+  json = json & """X-Real-IP"":""" & Request.ServerVariables("HTTP_X_REAL_IP") & """," ' ⑦
+  json = json & """Host"":""" & Request.ServerVariables("HTTP_HOST") & """," ' ⑧
+  json = json & """UserAgent"":""" & Request.ServerVariables("HTTP_USER_AGENT") & """," ' ⑨
+  json = json & """Referer"":""" & Request.ServerVariables("HTTP_REFERER") & """" ' ⑩
+  json = json & "}"
+
     Response.Write json
   Else
     Response.ContentType = "text/html"
@@ -187,35 +199,38 @@ On Error GoTo 0
     o = o & "</h1>"
 
     '---- Serial & Headers ----
-    o = o & "<p>Serial Number: <strong>$SN</strong></p><pre>"
-    o = o & "HostnameFQDN:    "   & "$FQDN" & vbCrLf
-    o = o & "ServerAddrRrivateIP: " & Request.ServerVariables("LOCAL_ADDR") & vbCrLf
-    o = o & "ServerAddrPublicIP: " & globalIP                      & vbCrLf
-    o = o & "RemoteAddr(YourIP):       "   & Request.ServerVariables("REMOTE_ADDR") & vbCrLf
-    o = o & "ClientIP:         "   & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
-    o = o & "X-Forwarded-For:  "   & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & vbCrLf
-    o = o & "X-Real-IP:        "   & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
-    o = o & "Host:             "   & Request.ServerVariables("HTTP_HOST") & vbCrLf
-    o = o & "User-Agent:       "   & Request.ServerVariables("HTTP_USER_AGENT") & vbCrLf
-    o = o & "Referer:          "   & Request.ServerVariables("HTTP_REFERER") & vbCrLf
+    o = o & "<p>Serial Number: <strong>$SN</strong></p>"
+    o = o & "<p>Server & Connection Info</p><pre>"
+    o = o & "HostnameFQDN                          :" & "$FQDN" & vbCrLf
+    o = o & "ServerAddrPrivateIP                   :" & Request.ServerVariables("LOCAL_ADDR") & vbCrLf
+    o = o & "ServerAddrPublicIP (*api.ipify.org)   :" & globalIP                      & vbCrLf
+    o = o & "RemoteAddr(Your IP from IP Layer)     :" & Request.ServerVariables("REMOTE_ADDR") & vbCrLf
+     o = o & "</pre>"
+
+    o = o & "<p>HTTP Headers</p><pre>"
+    o = o & "X-Forwarded-For    :" & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & vbCrLf
+    o = o & "X-Real-IP          :" & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
+    o = o & "Host Header        :" & Request.ServerVariables("HTTP_HOST") & vbCrLf
+    o = o & "User-Agent         :" & Request.ServerVariables("HTTP_USER_AGENT") & vbCrLf
+    o = o & "Referer            :" & Request.ServerVariables("HTTP_REFERER") & vbCrLf
     o = o & "</pre>"
 
    '---- JSON Retrieval Instructions ----
+    hostName = Request.ServerVariables("HTTP_HOST")
     o = o & "<hr><h2>JSON 出力の取得方法 / JSON Retrieval Methods</h2>"
     o = o & "<p>以下のいずれかの方法で JSON 出力が取得できます。<br>You can obtain the JSON response by one of the following:</p><ul>"
-    o = o & "<li><code>curl -H ""Accept: application/json"" https://{server}/</code></li>"
-    o = o & "<li><code>Invoke-RestMethod -Uri 'https://{server}/?format=json'</code></li>"
-    o = o & "<li><a href='/?format=json' target='_blank'>ブラウザで確認する / View in browser</a></li>"
+    o = o & "<li><code>curl -H ""Accept: application/json"" https://" & hostName & "/</code></li>"
+    o = o & "<li><code>Invoke-RestMethod -Uri 'https://" & hostName & "/?format=json'</code></li>"
+    o = o & "ブラウザで<li><a href='/?format=json' target='_blank'>'https://{server}/?format=json' / View in browser</a>を確認</li>"
     o = o & "</ul>"
 
 
     '---- Header Descriptions ----
     o = o & "<hr><h2>Header Descriptions</h2><dl>"
-    o = o & "<dt>ServerAddrPrivater</dt><dd>サーバーが受信したリクエストのローカルIPアドレス。通常はNICに割り当てられたプライベートIPです。<br>Private IP address of the server that received the request</dd>"
+    o = o & "<dt>ServerAddrPrivate</dt><dd>サーバーが受信したリクエストのローカルIPアドレス。通常はNICに割り当てられたプライベートIPです。<br>Private IP address of the server that received the request</dd>"
     o = o & "<dt>ServerAddrPublicIP</dt><dd>api.ipify.org によって取得されたグローバルIPアドレス。<br>Public IP address retrieved from api.ipify.org</dd>"
     o = o & "<dt>Hostname</dt><dd>SERVER_NAME の値。通常は Host ヘッダーまたはIISのバインディング設定に基づきます。<br>The value of SERVER_NAME, usually based on the Host header or binding configuration</dd>"
     o = o & "<dt>RemoteAddr</dt><dd>サーバー側が認識するクライアントの送信元IPアドレス。<br>Client IP address as seen by the server</dd>"
-    o = o & "<dt>ClientIP</dt><dd>リバースプロキシが付加する X-Real-IP ヘッダーから抽出されたクライアントIP。<br>Client IP extracted from the X-Real-IP header, typically set by a reverse proxy</dd>"
     o = o & "<dt>X-Forwarded-For</dt><dd>プロキシを通過したクライアントIPのカンマ区切りリスト。左端がオリジナルのクライアントIP。<br>Comma-separated list of IPs through proxy chain (leftmost is original client)</dd>"
     o = o & "<dt>X-Real-IP</dt><dd>リバースプロキシが明示的に指定したクライアントIPアドレス（X-Real-IP ヘッダー）。<br>Client IP as provided by the reverse proxy (X-Real-IP header)</dd>"
     o = o & "<dt>Host</dt><dd>クライアントが送信した HTTP Host ヘッダーの値。FQDNまたはIPアドレスが入り、IPでアクセスした場合はIPが表示されます。<br>The value of the HTTP Host header sent by the client. This is typically a domain name, but if accessed via IP address, the IP will appear here.</dd>"
