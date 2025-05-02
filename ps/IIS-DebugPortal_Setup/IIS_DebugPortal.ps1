@@ -221,7 +221,7 @@ On Error GoTo 0
     o = o & "<p>以下のいずれかの方法で JSON 出力が取得できます。<br>You can obtain the JSON response by one of the following:</p><ul>"
     o = o & "<li><code>curl -H ""Accept: application/json"" https://" & hostName & "/</code></li>"
     o = o & "<li><code>Invoke-RestMethod -Uri 'https://" & hostName & "/?format=json'</code></li>"
-    o = o & "ブラウザで<li><a href='/?format=json' target='_blank'>'https://{server}/?format=json' / View in browser</a>を確認</li>"
+    o = o & "<li>ブラウザで<a href='/?format=json' target='_blank'>https://" & hostName & "/?format=json</a> を確認</li>"
     o = o & "</ul>"
 
 
