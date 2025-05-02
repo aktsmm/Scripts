@@ -131,16 +131,24 @@ $asp = @"
 
   ' Fetch public IP from ipify
   Dim xmlhttp, jsonText, ipPos, globalIP
-  Set xmlhttp = Server.CreateObject("MSXML2.ServerXMLHTTP")
-  xmlhttp.open "GET", "https://api.ipify.org?format=json", False
-  xmlhttp.send
+On Error Resume Next
+Set xmlhttp = Server.CreateObject("MSXML2.ServerXMLHTTP")
+xmlhttp.open "GET", "https://api.ipify.org?format=json", False
+xmlhttp.send
+If Err.Number <> 0 Then
+  globalIP = "Unable to access api.ipify.org"
+  Err.Clear
+Else
   jsonText = xmlhttp.responseText
   ipPos = InStr(jsonText, """ip"":""")
   If ipPos > 0 Then
-    globalIP = Mid(jsonText, ipPos + 6, Len(jsonText) - (ipPos + 6) - 1)
+    globalIP = Mid(jsonText, ipPos + 6, InStr(ipPos + 6, jsonText, """") - (ipPos + 6))
   Else
     globalIP = "N/A"
   End If
+End If
+On Error GoTo 0
+
 
   If wantJson Then
     Response.ContentType = "application/json"
