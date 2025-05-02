@@ -181,7 +181,7 @@ $asp = @"
     '---- Serial & Headers ----
     o = o & "<p>Serial Number: <strong>$SN</strong></p><pre>"
     o = o & "HostnameFQDN:    "   & "$FQDN" & vbCrLf
-    o = o & "ServerAddrRrivater: " & Request.ServerVariables("LOCAL_ADDR") & vbCrLf
+    o = o & "ServerAddrRrivateIP: " & Request.ServerVariables("LOCAL_ADDR") & vbCrLf
     o = o & "ServerAddrPublicIP: " & globalIP                      & vbCrLf
     o = o & "RemoteAddr:       "   & Request.ServerVariables("REMOTE_ADDR") & vbCrLf
     o = o & "ClientIP:         "   & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
