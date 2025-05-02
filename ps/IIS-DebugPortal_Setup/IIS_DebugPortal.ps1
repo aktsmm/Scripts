@@ -146,7 +146,7 @@ $asp = @"
     Response.ContentType = "application/json"
     Dim json
     json = "{"
-    json = json & """ServerAddrPrivater"":""" & Request.ServerVariables("LOCAL_ADDR") & ""","
+    json = json & """ServerAddrPrivateIP"":""" & Request.ServerVariables("LOCAL_ADDR") & ""","
     json = json & """ServerAddrPublicIP"":""" & globalIP & ""","
     json = json & """HostnameFQDN"":""" & "$FQDN" & ""","
     json = json & """RemoteAddr"":"""         & Request.ServerVariables("REMOTE_ADDR") & ""","
@@ -183,7 +183,7 @@ $asp = @"
     o = o & "HostnameFQDN:    "   & "$FQDN" & vbCrLf
     o = o & "ServerAddrRrivateIP: " & Request.ServerVariables("LOCAL_ADDR") & vbCrLf
     o = o & "ServerAddrPublicIP: " & globalIP                      & vbCrLf
-    o = o & "RemoteAddr:       "   & Request.ServerVariables("REMOTE_ADDR") & vbCrLf
+    o = o & "RemoteAddr(YourIP):       "   & Request.ServerVariables("REMOTE_ADDR") & vbCrLf
     o = o & "ClientIP:         "   & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
     o = o & "X-Forwarded-For:  "   & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & vbCrLf
     o = o & "X-Real-IP:        "   & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
@@ -192,13 +192,14 @@ $asp = @"
     o = o & "Referer:          "   & Request.ServerVariables("HTTP_REFERER") & vbCrLf
     o = o & "</pre>"
 
-    '---- JSON Retrieval Instructions ----
-    o = o & "<hr><h2>JSON Retrieval Methods</h2>"
-    o = o & "<p>You can obtain the JSON response by one of the following:</p>"
-    o = o & "<ul>"
+   '---- JSON Retrieval Instructions ----
+    o = o & "<hr><h2>JSON 出力の取得方法 / JSON Retrieval Methods</h2>"
+    o = o & "<p>以下のいずれかの方法で JSON 出力が取得できます。<br>You can obtain the JSON response by one of the following:</p><ul>"
     o = o & "<li><code>curl -H ""Accept: application/json"" https://{server}/</code></li>"
     o = o & "<li><code>Invoke-RestMethod -Uri 'https://{server}/?format=json'</code></li>"
+    o = o & "<li><a href='/?format=json' target='_blank'>ブラウザで確認する / View in browser</a></li>"
     o = o & "</ul>"
+
 
     '---- Header Descriptions ----
     o = o & "<hr><h2>Header Descriptions</h2><dl>"
