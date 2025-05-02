@@ -1,3 +1,4 @@
+
 <#
 ========================================================================
  PowerShell Script: Setup_IIS_Debug_Env.ps1
@@ -115,6 +116,7 @@ $SN    = $hash.Substring(0,8)
 # ========================
 Write-Host "▶ 7. Creating index.asp for header info (SN=$SN)..." -ForegroundColor Cyan
 $utf8Bom = New-Object System.Text.UTF8Encoding($true)
+$FQDN = ([System.Net.Dns]::GetHostByName(($env:computerName))).HostName
 
 $asp = @"
 <%@ Language="VBScript" CodePage="65001" %>
@@ -146,7 +148,7 @@ $asp = @"
     json = "{"
     json = json & """ServerAddrPrivater"":""" & Request.ServerVariables("LOCAL_ADDR") & ""","
     json = json & """ServerAddrPublicIP"":""" & globalIP & ""","
-    json = json & """Hostname"":"""           & Request.ServerVariables("SERVER_NAME") & ""","
+    json = json & """HostnameFQDN"":""" & "$FQDN" & ""","
     json = json & """RemoteAddr"":"""         & Request.ServerVariables("REMOTE_ADDR") & ""","
     json = json & """ClientIP"":"""           & Request.ServerVariables("HTTP_X_REAL_IP") & ""","
     json = json & """X-Forwarded-For"":"""    & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & ""","
@@ -178,9 +180,9 @@ $asp = @"
 
     '---- Serial & Headers ----
     o = o & "<p>Serial Number: <strong>$SN</strong></p><pre>"
+    o = o & "HostnameFQDN:    "   & "$FQDN" & vbCrLf
     o = o & "ServerAddrRrivater: " & Request.ServerVariables("LOCAL_ADDR") & vbCrLf
     o = o & "ServerAddrPublicIP: " & globalIP                      & vbCrLf
-    o = o & "Hostname:         "   & Request.ServerVariables("SERVER_NAME") & vbCrLf
     o = o & "RemoteAddr:       "   & Request.ServerVariables("REMOTE_ADDR") & vbCrLf
     o = o & "ClientIP:         "   & Request.ServerVariables("HTTP_X_REAL_IP") & vbCrLf
     o = o & "X-Forwarded-For:  "   & Request.ServerVariables("HTTP_X_FORWARDED_FOR") & vbCrLf
@@ -200,16 +202,16 @@ $asp = @"
 
     '---- Header Descriptions ----
     o = o & "<hr><h2>Header Descriptions</h2><dl>"
-    o = o & "<dt>ServerAddrPrivater</dt><dd>IP address on which the server is listening</dd>"
-    o = o & "<dt>ServerAddrPublicIP</dt><dd>Public IP address retrieved from api.ipify.org</dd>"
-    o = o & "<dt>Hostname</dt><dd>Requested host name</dd>"
-    o = o & "<dt>RemoteAddr</dt><dd>Client IP address as seen by the server</dd>"
-    o = o & "<dt>ClientIP</dt><dd>Original client IP when behind a proxy</dd>"
-    o = o & "<dt>X-Forwarded-For</dt><dd>List of client IPs through proxy chain</dd>"
-    o = o & "<dt>X-Real-IP</dt><dd>Direct client IP address</dd>"
-    o = o & "<dt>Host</dt><dd>Value of the HTTP Host header</dd>"
-    o = o & "<dt>User-Agent</dt><dd>Client browser or tool identifier</dd>"
-    o = o & "<dt>Referer</dt><dd>URL of the previous page visited</dd>"
+    o = o & "<dt>ServerAddrPrivater</dt><dd>サーバーが受信したリクエストのローカルIPアドレス。通常はNICに割り当てられたプライベートIPです。<br>Private IP address of the server that received the request</dd>"
+    o = o & "<dt>ServerAddrPublicIP</dt><dd>api.ipify.org によって取得されたグローバルIPアドレス。<br>Public IP address retrieved from api.ipify.org</dd>"
+    o = o & "<dt>Hostname</dt><dd>SERVER_NAME の値。通常は Host ヘッダーまたはIISのバインディング設定に基づきます。<br>The value of SERVER_NAME, usually based on the Host header or binding configuration</dd>"
+    o = o & "<dt>RemoteAddr</dt><dd>サーバー側が認識するクライアントの送信元IPアドレス。<br>Client IP address as seen by the server</dd>"
+    o = o & "<dt>ClientIP</dt><dd>リバースプロキシが付加する X-Real-IP ヘッダーから抽出されたクライアントIP。<br>Client IP extracted from the X-Real-IP header, typically set by a reverse proxy</dd>"
+    o = o & "<dt>X-Forwarded-For</dt><dd>プロキシを通過したクライアントIPのカンマ区切りリスト。左端がオリジナルのクライアントIP。<br>Comma-separated list of IPs through proxy chain (leftmost is original client)</dd>"
+    o = o & "<dt>X-Real-IP</dt><dd>リバースプロキシが明示的に指定したクライアントIPアドレス（X-Real-IP ヘッダー）。<br>Client IP as provided by the reverse proxy (X-Real-IP header)</dd>"
+    o = o & "<dt>Host</dt><dd>クライアントが送信した HTTP Host ヘッダーの値。FQDNまたはIPアドレスが入り、IPでアクセスした場合はIPが表示されます。<br>The value of the HTTP Host header sent by the client. This is typically a domain name, but if accessed via IP address, the IP will appear here.</dd>"
+    o = o & "<dt>User-Agent</dt><dd>クライアントのブラウザやツール識別子（例：curl、Chrome など）。<br>Client's browser or tool identifier (e.g., curl, Chrome)</dd>"
+    o = o & "<dt>Referer</dt><dd>現在のリクエストにリンクしていた直前のページのURL。空になる場合もあります。<br>URL of the page that linked to the current request (may be empty)</dd>"
     o = o & "</dl>"
 
     '---- Live Log Viewing ----
