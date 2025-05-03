@@ -5,7 +5,7 @@
     experience (UI, culture, geo, keyboard, IME, time zone).
 
 .DESCRIPTION
-    • Adds ja-JP language capabilities (ODC or Install-Language).
+    • Adds ja-JP language capabilities.
     • Sets Display/UI language, System locale, Culture, Geo, TimeZone.
     • Registers Japanese keyboard (TIP 0411:00000411) and makes IME default.
     • Idempotent on re-run.
@@ -25,12 +25,15 @@ param (
 $ErrorActionPreference = 'Stop'
 
 # --------------------------------------------------------------------
-# Language pack installation & completion check
+# 1. Language pack installation & verification
 # --------------------------------------------------------------------
 Write-Host "▶ Checking language pack status..." -ForegroundColor Cyan
-if (-not (Get-WindowsCapability -Online | 
-          Where-Object { $_.Name -like "Language.Basic~~~$LanguageTag~*" -and $_.State -eq 'Installed' })) {
+$languageBasic = "Language.Basic~~~$LanguageTag~0.0.1.0"
+$installed = Get-WindowsCapability -Online | Where-Object {
+    $_.Name -eq $languageBasic -and $_.State -eq 'Installed'
+}
 
+if (-not $installed) {
     Write-Host "▶ Installing language capabilities..." -ForegroundColor Cyan
     $caps = @(
         "Language.Basic~~~$LanguageTag~0.0.1.0",
@@ -40,37 +43,32 @@ if (-not (Get-WindowsCapability -Online |
         "Language.TextToSpeech~~~$LanguageTag~0.0.1.0"
     )
     foreach ($cap in $caps) {
-        Add-WindowsCapability -Online -Name $cap
+        Add-WindowsCapability -Online -Name $cap -ErrorAction Stop
     }
 
     Write-Host "⏳ Waiting for language pack installation..." -ForegroundColor Cyan
     do {
         Start-Sleep -Seconds 5
-        $LangStatus = Get-WindowsCapability -Online |
-                      Where-Object { $_.Name -like "Language.Basic~~~$LanguageTag~*" }
-        if ($LangStatus.State -eq 'Installed') {
-            Write-Host "✔ Language pack installed successfully." -ForegroundColor Green
-            break
-        } else {
-            Write-Host "  - Current state: $($LangStatus.State)" -ForegroundColor Yellow
-        }
-    } while ($true)
-}
-else {
+        $status = (Get-WindowsCapability -Online | Where-Object { $_.Name -eq $languageBasic }).State
+        Write-Host "  - Current state: $status" -ForegroundColor Yellow
+    } until ($status -eq 'Installed')
+
+    Write-Host "✔ Language pack installed successfully." -ForegroundColor Green
+} else {
     Write-Host "✔ Language pack already installed." -ForegroundColor Green
 }
 
 # --------------------------------------------------------------------
-# Set Locale, UI, and Region
+# 2. Locale, culture, and region settings
 # --------------------------------------------------------------------
 Write-Host "▶ Configuring system locale and culture..." -ForegroundColor Cyan
-Set-WinSystemLocale $LanguageTag
-Set-Culture        $LanguageTag
-Set-WinUILanguageOverride $LanguageTag
-Set-WinHomeLocation -GeoId $GeoId
+Set-WinSystemLocale           $LanguageTag
+Set-Culture                   $LanguageTag
+Set-WinUILanguageOverride     $LanguageTag
+Set-WinHomeLocation          -GeoId $GeoId
 
 # --------------------------------------------------------------------
-# User language list & IME keyboard setup
+# 3. User language and IME keyboard
 # --------------------------------------------------------------------
 Write-Host "▶ Configuring user language & keyboard..." -ForegroundColor Cyan
 $newList = New-WinUserLanguageList $LanguageTag
@@ -78,29 +76,31 @@ $newList[0].Handwriting = $true
 $newList[0].InputMethodTips.Clear()
 [void]$newList[0].InputMethodTips.Add($JaImeTip)
 Set-WinUserLanguageList $newList -Force
-
 Set-WinDefaultInputMethodOverride -InputTip $JaImeTip
 
 # --------------------------------------------------------------------
-# Time zone setting
+# 4. Time zone
 # --------------------------------------------------------------------
-Write-Host "▶ Configuring time zone to $TimeZoneId..." -ForegroundColor Cyan
+Write-Host "▶ Configuring time zone to '$TimeZoneId'..." -ForegroundColor Cyan
 Set-TimeZone -Id $TimeZoneId
 
 # --------------------------------------------------------------------
-# Explicitly set UI language via registry for user session
+# 5. Registry-based UI language override for user
 # --------------------------------------------------------------------
-Write-Host "▶ Explicitly setting UI language in registry..." -ForegroundColor Cyan
+Write-Host "▶ Setting UI language in registry..." -ForegroundColor Cyan
 Set-ItemProperty 'HKCU:\Control Panel\Desktop' -Name 'PreferredUILanguages' -Value $LanguageTag -Force
 Set-ItemProperty 'HKCU:\Control Panel\Desktop\MuiCached' -Name 'MachinePreferredUILanguages' -Value $LanguageTag -Force
 Set-ItemProperty 'HKCU:\Control Panel\International\User Profile' -Name 'Languages' -Value $LanguageTag -Force
 
 # --------------------------------------------------------------------
-# BCD locale settings for boot-time language
+# 6. Boot-time language settings
 # --------------------------------------------------------------------
 Write-Host "▶ Applying boot-time locale settings..." -ForegroundColor Cyan
 bcdedit /set {current} locale $LanguageTag | Out-Null
 bcdedit /set {bootmgr} locale $LanguageTag | Out-Null
-bcdedit /set {current} quietboot Yes | Out-Null
+bcdedit /set {current} quietboot Yes       | Out-Null
 
+# --------------------------------------------------------------------
+# 7. Done
+# --------------------------------------------------------------------
 Write-Host "`n✔ Japanese locale & UI configuration complete. Please reboot now." -ForegroundColor Green
