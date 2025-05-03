@@ -22,17 +22,6 @@ $SiteName    = "Default Web Site"
 $WebRoot     = "C:\inetpub\wwwroot"
 $CertSubject = "CN=localhost"
 
-## Error Message 表示設定
-
-Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
-  -filter "system.webServer/httpErrors" -name errorMode -value "Detailed"
-
-Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
-  -filter "system.webServer/asp" -name "scriptErrorSentToBrowser" -value "True"
-
-Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
-  -filter "system.webServer/asp" -name "scriptErrorMessage" -value "ASP Error"
-
 
 # ========================
 # 1. IIS 機能インストール
@@ -41,6 +30,15 @@ Write-Host "▶ 1. Installing IIS features..." -ForegroundColor Cyan
 if (-not (Get-WindowsFeature Web-Server).Installed) {
     Install-WindowsFeature -Name Web-Server,Web-ASP -IncludeManagementTools
 }
+
+## IIS  Error Message 表示設定
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/httpErrors" -name errorMode -value "Detailed"
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/asp" -name "scriptErrorSentToBrowser" -value "True"
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+  -filter "system.webServer/asp" -name "scriptErrorMessage" -value "ASP Error"
+
 
 # ========================
 # 2. 不要ファイル初期化
