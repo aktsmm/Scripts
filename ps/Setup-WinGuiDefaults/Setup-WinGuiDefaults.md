@@ -1,7 +1,7 @@
-# Setup-WinGuiDefaults.ps1
+# Setup-WinGuiDefaultSetting.ps1
 
 ## 概要
-『Setup-WinGuiDefaults.ps1』は、Windows Server 2019 / Windows 10以降のGUI環境向けの初期セットアップを簡単に自動化するためのPowerShellスクリプトです。管理者が新規構築や定期的なメンテナンス時に利用できます。
+『Setup-WinGuiDefaultSetting.ps1』は、Windows Server 2019 / Windows 10以降のGUI環境向けの初期セットアップを簡単に自動化するためのPowerShellスクリプトです。管理者が新規構築や定期的なメンテナンス時に利用できます。
 
 ---
 
@@ -38,7 +38,7 @@ PowerShellを管理者権限で起動し、以下のコマンドを実行して�
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-.\Setup-WinGuiDefaults.ps1
+.\Setup-WinGuiDefaultSetting.ps1
 ```
 
 ---
