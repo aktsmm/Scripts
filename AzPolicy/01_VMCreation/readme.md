@@ -52,7 +52,7 @@ OSディスクの条件:
   allowedDiskIdPattern のデフォルト値は "-osdisk-20"。(Azure Backupでリストアしたディスクで含まれるモノ)
 
 
-##  restore_specific_Regex_imcomp.json
+## restore_specific_Regex_imcomp.json
 **未完成、正規表現マッチがうまく動作しない**
 + type が Microsoft.Compute/virtualMachines（仮想マシン）である場合にポリシーが適用される。
 
@@ -65,3 +65,13 @@ OSディスクの条件:
 
 + デフォルト値は .*osdisk-\d{8}-\d{6}$。
 例: osdisk-20240101-123456 の形式に一致します。
+
+## SCREEN SHOT
+
+以下は、ポリシー適用後のスクリーンショット例です。
+
+### ポリシー適用結果の例 1
+![ScreenShot01](./ScreenShot01.png)
+
+### ポリシー適用結果の例 2
+![ScreenShot02](./ScreenShot02.png)

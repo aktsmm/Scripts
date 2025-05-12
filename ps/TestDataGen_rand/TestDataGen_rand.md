@@ -1,4 +1,3 @@
-
 # 📁 PowerShell：ランダムファイル生成ツール
 
 ## 🧩 機能概要
@@ -13,6 +12,8 @@
 ---
 ## SCREEN SHOT
 
+![ScreenShot01](./images/ScreenShot01.png)
+![ScreenShot02](./images/ScreenShot02.png)
 
 ## 🚀 特徴
 
