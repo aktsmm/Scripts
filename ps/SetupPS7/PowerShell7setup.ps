@@ -1,0 +1,188 @@
+# 管理者権限で実行する必要があります
+
+# PowerShell 7がインストールされているか確認
+$ps7Installed = $false
+$ps7Path = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+$ps7x86Path = "${env:ProgramFiles(x86)}\PowerShell\7\pwsh.exe"
+
+if (Test-Path $ps7Path) {
+    $ps7Installed = $true
+    $ps7Version = (Get-Item $ps7Path).VersionInfo.ProductVersion
+    Write-Host "PowerShell 7 ($ps7Version) は既にインストールされています: $ps7Path" -ForegroundColor Green
+} elseif (Test-Path $ps7x86Path) {
+    $ps7Installed = $true
+    $ps7Version = (Get-Item $ps7x86Path).VersionInfo.ProductVersion
+    Write-Host "PowerShell 7 ($ps7Version) は既にインストールされています (x86): $ps7x86Path" -ForegroundColor Green
+}
+
+# PowerShell 7がインストールされていない場合のみインストール処理を実行
+if (-not $ps7Installed) {
+    # PowerShell 7のインストール
+    $InstallDir = "$env:ProgramFiles\PowerShell\7"
+
+    # まずMSI インストーラをダウンロード
+    $tempDir = [System.IO.Path]::GetTempPath()
+    $installerPath = Join-Path $tempDir "PowerShell-7-win-x64.msi"
+    $releaseUrl = "https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/PowerShell-7.4.1-win-x64.msi"
+
+    # MSIのダウンロード
+    Write-Host "PowerShell 7のインストーラをダウンロード中..." -ForegroundColor Yellow
+    Invoke-WebRequest -Uri $releaseUrl -OutFile $installerPath
+
+    # インストールの実行 (サイレントインストール)
+    Write-Host "PowerShell 7をインストール中..." -ForegroundColor Yellow
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$installerPath`" /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1 USE_MU=1 ENABLE_MU=1" -Wait
+
+    # インストール完了を確認するために少し待機
+    Start-Sleep -Seconds 5
+    
+    # インストール後のバージョン確認
+    if (Test-Path $ps7Path) {
+        $ps7Version = (Get-Item $ps7Path).VersionInfo.ProductVersion
+        Write-Host "PowerShell 7 ($ps7Version) のインストールが完了しました" -ForegroundColor Green
+    } else {
+        Write-Warning "PowerShell 7のインストールが完了しましたが、実行ファイルが見つかりません"
+    }
+} else {
+    Write-Host "PowerShell 7は既にインストールされているため、インストールプロセスをスキップします" -ForegroundColor Cyan
+}
+
+# PowerShell 7のショートカットパスを検索
+$possiblePaths = @(
+    "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\PowerShell\PowerShell 7 (x64).lnk",
+    "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\PowerShell 7 (x64).lnk",
+    "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\PowerShell 7.lnk"
+)
+
+$ps7ShortcutPath = $null
+foreach ($path in $possiblePaths) {
+    if (Test-Path $path) {
+        $ps7ShortcutPath = $path
+        Write-Host "PowerShell 7ショートカットを見つけました: $ps7ShortcutPath" -ForegroundColor Green
+        break
+    }
+}
+
+# ショートカットが見つからない場合は作成
+if (-not $ps7ShortcutPath) {
+    Write-Host "PowerShell 7のショートカットが見つかりません。新しく作成します。" -ForegroundColor Yellow
+    
+    # 一時的なショートカット作成用PowerShellスクリプト
+    $createShortcutScript = @"
+    `$WshShell = New-Object -ComObject WScript.Shell
+    `$Shortcut = `$WshShell.CreateShortcut("`$env:ProgramData\Microsoft\Windows\Start Menu\Programs\PowerShell 7 (x64).lnk")
+    `$Shortcut.TargetPath = "`$env:ProgramFiles\PowerShell\7\pwsh.exe"
+    `$Shortcut.Description = "PowerShell 7"
+    `$Shortcut.WorkingDirectory = "`$env:USERPROFILE"
+    `$Shortcut.IconLocation = "`$env:ProgramFiles\PowerShell\7\pwsh.exe,0"
+    `$Shortcut.Save()
+"@
+    
+    # スクリプトを実行
+    $tempScriptPath = Join-Path $env:TEMP "CreatePs7Shortcut.ps1"
+    Set-Content -Path $tempScriptPath -Value $createShortcutScript
+    & powershell.exe -ExecutionPolicy Bypass -File $tempScriptPath
+    
+    # 作成後のパスを設定
+    $ps7ShortcutPath = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\PowerShell 7 (x64).lnk"
+    if (Test-Path $ps7ShortcutPath) {
+        Write-Host "PowerShell 7ショートカットを作成しました: $ps7ShortcutPath" -ForegroundColor Green
+    } else {
+        Write-Warning "PowerShell 7ショートカットの作成に失敗しました"
+    }
+}
+
+# PowerShell 7のプロファイル設定ファイルを作成
+# 初期ディレクトリをデスクトップに設定する
+$pwshProfileTemplate = @"
+# PowerShell 7 プロファイル
+# 初期ディレクトリをデスクトップに設定
+Set-Location -Path ([Environment]::GetFolderPath('Desktop'))
+
+# 起動メッセージ
+Write-Host "PowerShell 7へようこそ! 初期ディレクトリはデスクトップに設定されています。" -ForegroundColor Cyan
+"@
+
+# すべてのユーザープロファイルフォルダを取得
+$userFolders = Get-ChildItem -Path "C:\Users" -Directory | Where-Object { $_.Name -ne "Public" -and $_.Name -ne "Default" -and $_.Name -ne "Default User" }
+
+# 既存のユーザーの設定を行う
+Write-Host "既存ユーザーの設定を行っています..." -ForegroundColor Yellow
+foreach ($userFolder in $userFolders) {
+    # ユーザー名
+    $userName = $userFolder.Name
+    Write-Host "ユーザー $userName の設定中..." -ForegroundColor Cyan
+    
+    # タスクバーにピン止め
+    $taskbarFolder = Join-Path $userFolder.FullName "AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+    if (Test-Path $taskbarFolder) {
+        try {
+            Copy-Item -Path $ps7ShortcutPath -Destination $taskbarFolder -Force -ErrorAction SilentlyContinue
+            Write-Host "  - タスクバーにピン止め完了" -ForegroundColor Green
+        } catch {
+            Write-Warning "  - タスクバーピン止めに失敗: $_"
+        }
+    } else {
+        Write-Warning "  - タスクバーフォルダが見つかりません: $taskbarFolder"
+    }
+    
+    # PowerShell 7のプロファイルディレクトリ作成
+    $userPs7ProfileDir = Join-Path $userFolder.FullName "Documents\PowerShell"
+    if (-not (Test-Path $userPs7ProfileDir)) {
+        New-Item -Path $userPs7ProfileDir -ItemType Directory -Force | Out-Null
+    }
+    
+    # プロファイル設定ファイル作成
+    $userPs7ProfilePath = Join-Path $userPs7ProfileDir "Microsoft.PowerShell_profile.ps1"
+    Set-Content -Path $userPs7ProfilePath -Value $pwshProfileTemplate -Force
+    Write-Host "  - PowerShell 7プロファイル設定完了" -ForegroundColor Green
+    
+    # デスクトップにショートカットを作成
+    $userDesktop = Join-Path $userFolder.FullName "Desktop"
+    if (Test-Path $userDesktop) {
+        try {
+            Copy-Item -Path $ps7ShortcutPath -Destination $userDesktop -Force -ErrorAction SilentlyContinue
+            Write-Host "  - デスクトップにショートカット作成完了" -ForegroundColor Green
+        } catch {
+            Write-Warning "  - デスクトップショートカット作成に失敗: $_"
+        }
+    }
+}
+
+# 新規ユーザー用のデフォルトプロファイル設定
+Write-Host "新規ユーザー用デフォルト設定を行っています..." -ForegroundColor Yellow
+
+# デフォルトユーザープロファイル用のパス
+$defaultUserTaskbar = "C:\Users\Default\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+$defaultPs7ProfileDir = "C:\Users\Default\Documents\PowerShell"
+$defaultUserDesktop = "C:\Users\Default\Desktop"
+
+# デフォルトユーザーのタスクバーフォルダ確認と作成
+if (-not (Test-Path $defaultUserTaskbar)) {
+    New-Item -Path $defaultUserTaskbar -ItemType Directory -Force | Out-Null
+}
+
+# PowerShell 7のショートカットをタスクバーフォルダにコピー
+Copy-Item -Path $ps7ShortcutPath -Destination $defaultUserTaskbar -Force -ErrorAction SilentlyContinue
+
+# デフォルトユーザーのPowerShell 7プロファイルディレクトリ確認と作成
+if (-not (Test-Path $defaultPs7ProfileDir)) {
+    New-Item -Path $defaultPs7ProfileDir -ItemType Directory -Force | Out-Null
+}
+
+# プロファイル設定ファイル作成
+$defaultPs7ProfilePath = Join-Path $defaultPs7ProfileDir "Microsoft.PowerShell_profile.ps1"
+Set-Content -Path $defaultPs7ProfilePath -Value $pwshProfileTemplate -Force
+
+# デスクトップにショートカットをコピー
+if (Test-Path $defaultUserDesktop) {
+    Copy-Item -Path $ps7ShortcutPath -Destination $defaultUserDesktop -Force -ErrorAction SilentlyContinue
+}
+
+# 完了メッセージ
+Write-Host "`nセットアップが完了しました！" -ForegroundColor Green
+Write-Host "以下の設定が行われました：" -ForegroundColor Green
+Write-Host "1. すべてのユーザーのタスクバーにPowerShell 7をピン止め" -ForegroundColor White
+Write-Host "2. 初期コンソールの位置が各ユーザーのデスクトップに設定" -ForegroundColor White
+Write-Host "3. 各ユーザーのデスクトップにPowerShell 7のショートカットを作成" -ForegroundColor White
+Write-Host "新規ユーザーにも同じ設定が適用されます。" -ForegroundColor Green
