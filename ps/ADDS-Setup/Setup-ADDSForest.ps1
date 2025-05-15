@@ -1,25 +1,10 @@
-<#
-.SYNOPSIS
-    自動で AD DS フォレストを新規構成し、ドメイン コントローラーへ昇格します。
-
-.PARAMETER DomainName
-    新規フォレストの FQDN (例: contoso.local)
-
-.PARAMETER SafeModeAdminPassword
-    Directory Services Restore Mode 用パスワード（平文で OK。スクリプト内で SecureString 化）
-
-.EXAMPLE
-    powershell -ExecutionPolicy Bypass -File .\Setup-ADDSForest.ps1 `
-      -DomainName contoso.local -SafeModeAdminPassword P@ssw0rd123
-#>
-
 [CmdletBinding(SupportsShouldProcess)]
 param(
-    [Parameter(Mandatory)]
-    [string]$DomainName,
+    [Parameter(Mandatory = $false)]
+    [string]$DomainName = 'kinoko.yama',
 
-    [Parameter(Mandatory)]
-    [string]$SafeModeAdminPassword
+    [Parameter(Mandatory = $false)]
+    [string]$SafeModeAdminPassword = 'P@ssw0rd!'
 )
 
 #----------------------------
