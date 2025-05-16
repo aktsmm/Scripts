@@ -55,6 +55,12 @@
 
 ---
 
+## 実行イメージ図
+**PowerShell のスクリプト名は変わっています**
+![Image](https://github.com/user-attachments/assets/1e1e5f2a-2e43-4ef2-9215-7681ca93b11b)
+
+
+
 ## 📌 注意点
 
 - Archive 層の BLOB を HOT に移行するには、事前にリハイドレートを開始しておく必要があります。
