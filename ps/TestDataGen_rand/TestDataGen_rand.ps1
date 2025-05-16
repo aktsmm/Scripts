@@ -3,7 +3,7 @@ param(
     [int]$DepthLevel1 = $null,
     [int]$DepthLevel2 = $null,
     [int]$DepthLevel3 = $null,
-    [int]$TotalSizeGB = $null,
+    [double]$TotalSizeGB = $null, # 小数対応（念のため）
     [string]$RootDir = $null
 )
 
@@ -26,8 +26,11 @@ foreach ($param in $defaultValues.Keys) {
         }
         else {
             $inputValue = Read-Host "では、$param の値を入力してください"
-            if ($param -match 'TotalFiles|DepthLevel|TotalSizeGB') {
+            if ($param -match 'TotalFiles|DepthLevel') {
                 Set-Variable -Name $param -Value ([int]$inputValue)
+            }
+            elseif ($param -eq 'TotalSizeGB') {
+                Set-Variable -Name $param -Value ([double]$inputValue)
             }
             else {
                 Set-Variable -Name $param -Value $inputValue
@@ -47,7 +50,7 @@ Write-Host "  RootDir       : $RootDir"
 
 
 # 1ファイルあたりのサイズ（バイト）
-$FileSizeBytes = [math]::Floor(($TotalSizeGB * 1024 * 1024 * 1024) / $TotalFiles)
+$FileSizeBytes = [math]::Max(1, [math]::Floor(($TotalSizeGB * 1024 * 1024 * 1024) / $TotalFiles))
 
 Write-Host "`n▶ ディレクトリ構造を作成中..."
 New-Item -Path $RootDir -ItemType Directory -Force | Out-Null
@@ -75,12 +78,40 @@ Write-Host "`n▶ 各ディレクトリに $filesPerDir ファイル、最初の
 function New-RandomFile {
     param (
         [string]$FilePath,
-        [long]$SizeBytes
+        [double]$SizeBytes
     )
-    $Buffer = New-Object byte[] $SizeBytes
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($Buffer)
-    [System.IO.File]::WriteAllBytes($FilePath, $Buffer)
+
+    $chunkSize = 100MB
+    $buffer = New-Object byte[] ([int]$chunkSize)
+    $bytesWritten = 0
+    $fs = [System.IO.File]::Open($FilePath, [System.IO.FileMode]::Create)
+
+    try {
+        while ($bytesWritten -lt $SizeBytes) {
+            $remaining = $SizeBytes - $bytesWritten
+            $writeSize = if ($remaining -lt $chunkSize) { $remaining } else { $chunkSize }
+
+            # 乱数バッファの生成
+            $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+            $rng.GetBytes($buffer, 0, [math]::Min([int]$writeSize, $buffer.Length))
+
+            # 書き込み
+            $fs.Write($buffer, 0, [int]$writeSize)
+            $bytesWritten += $writeSize
+
+            # 進捗更新（バイトベース）
+            $percentComplete = [math]::Round(($bytesWritten / $SizeBytes) * 100, 1)
+            Write-Progress -Activity "📦 $([System.IO.Path]::GetFileName($FilePath)) 作成中" `
+                -Status "$bytesWritten / $SizeBytes bytes ($percentComplete%)" `
+                -PercentComplete $percentComplete
+        }
+    }
+    finally {
+        $fs.Close()
+        Write-Progress -Activity "📦 $([System.IO.Path]::GetFileName($FilePath)) 作成中" -Completed
+    }
 }
+
 
 # ファイル作成ループ
 $fileCount = 1
