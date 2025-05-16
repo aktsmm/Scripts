@@ -6,6 +6,8 @@ param (
     [int]$IntervalSeconds = 5
 )
 
+
+
 $ctx = (Get-AzStorageAccount -ResourceGroupName $ResourceGroup -Name $StorageAccount).Context
 $logDir = "$PSScriptRoot\rehydrate_monitor_logs"
 New-Item -Path $logDir -ItemType Directory -Force | Out-Null
@@ -17,6 +19,12 @@ $summaryLog = Join-Path $logDir "summary.log"
 # 初期取得（Created最小の検出用）
 $blobs = Get-AzStorageBlob -Container $Container -Context $ctx -Prefix $Prefix
 $blobStates = @{}
+
+if ($blobs.Count -eq 0) {
+    Write-Host "⚠ BLOB が見つかりません（Prefix: $Prefix）"
+    return
+}
+
 
 foreach ($blob in $blobs) {
     $blob.ICloudBlob.FetchAttributes()
