@@ -1,6 +1,6 @@
-# Azure Blob Rehydrate & Monitor Script (with Copy and Priority)
+# Azure Blob Rehydrate  Script 
 
-この PowerShell スクリプトは、Azure BLOB Storage 上の **Archive層BLOBをHot層にコピーしつつ、リハイドレート状態を監視**するツールです。優先度の切り替えも可能。
+この PowerShell スクリプトは、Azure BLOB Storage 上の **Archive層BLOBをHot層にコピー**するツールです。優先度の切り替えも可能。
 
 ## 🧠 主な機能
 
