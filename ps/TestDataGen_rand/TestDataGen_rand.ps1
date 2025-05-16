@@ -9,7 +9,7 @@ param(
 
 # デフォルト値
 $defaultValues = @{
-    TotalFiles  = 101
+    TotalFiles  = 100
     DepthLevel1 = 3
     DepthLevel2 = 3
     DepthLevel3 = 3
