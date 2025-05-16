@@ -75,7 +75,7 @@ Write-Host "`n▶ 各ディレクトリに $filesPerDir ファイル、最初の
 function New-RandomFile {
     param (
         [string]$FilePath,
-        [int]$SizeBytes
+        [long]$SizeBytes
     )
     $Buffer = New-Object byte[] $SizeBytes
     [System.Security.Cryptography.RandomNumberGenerator]::Fill($Buffer)
