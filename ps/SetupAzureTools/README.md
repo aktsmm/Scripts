@@ -97,14 +97,18 @@
 
 ### Azure CLI の場合
 
-1. **Chocolatey** が利用可能な場合: `choco install azure-cli`
-2. **MSIインストーラー** を使用: 公式サイトからダウンロードしてサイレントインストール
+1. **Chocolatey** が利用可能な場合: `choco install azure-cli` (最新版)
+2. **MSIインストーラー** を使用: Microsoft公式サイトから最新版をダウンロードしてサイレントインストール
+
+> **注意**: このスクリプトは常に**最新バージョン**をインストールします。特定のバージョンを指定することはできません。
 
 ### Azure PowerShell の場合
 
-1. **PowerShell Gallery** から Az モジュールをインストール
+1. **PowerShell Gallery** から最新の Az モジュールをインストール
 2. 必要に応じて NuGet プロバイダーを自動インストール
 3. PowerShell Gallery を信頼済みリポジトリに設定
+
+> **注意**: Azure PowerShell も常に**最新バージョン**をインストールします。既存のインストールがある場合は最新版に更新されます。
 
 ## ログ出力
 
@@ -229,15 +233,25 @@ Get-Content "AzureToolsSetup_*.log" | Select-String "ERROR"
 # PowerShellバージョン確認
 $PSVersionTable
 
-# Azure CLIバージョン確認
+# Azure CLIバージョン確認 (最新版が表示されます)
 az --version
 
-# Azure PowerShellバージョン確認
+# Azure PowerShellバージョン確認 (最新版が表示されます)
 Get-Module Az -ListAvailable | Select-Object Name, Version
 
 # インストール済みAzureモジュール一覧
 Get-Module Az.* -ListAvailable | Sort-Object Name
+
+# 現在利用可能な最新バージョンの確認 (参考)
+# Azure CLI: https://github.com/Azure/azure-cli/releases
+# Azure PowerShell: https://github.com/Azure/azure-powershell/releases
 ```
+
+### バージョン管理のベストプラクティス
+
+- **開発環境**: 最新バージョンの使用を推奨（新機能とセキュリティ更新）
+- **本番環境**: 特定バージョンの固定が必要な場合は、別途手動インストールを検討
+- **CI/CD環境**: このスクリプトは常に最新版をインストールするため、ビルドの一貫性に注意
 
 ## サポート
 
