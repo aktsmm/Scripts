@@ -116,6 +116,8 @@
 
 ### Azure CLI 特定バージョンのインストール
 
+> **重要**: 特定のバージョンを指定する前に、[Azure CLI公式GitHubリリースページ](https://github.com/Azure/azure-cli/releases)で利用可能なバージョンと変更内容を確認してください。
+
 #### 1. WinGet を使用した特定バージョンのインストール
 
 ```powershell
@@ -125,10 +127,22 @@ winget install --exact --id Microsoft.AzureCLI --version 2.67.0
 
 #### 2. PowerShell + MSI インストーラーでの特定バージョンインストール
 
+> **注意**: このコマンドは**最新バージョン**をインストールします。特定バージョン（例：2.45.0）を指定したい場合は、[公式GitHubのリリースページ](https://github.com/Azure/azure-cli/releases)から該当するMSIのダウンロードURLを確認してください。
+
 ```powershell
-# 特定のバージョンのMSIインストーラーをダウンロード・インストール（例：2.51.0）
+# 特定のバージョンのMSIインストーラーをダウンロード・インストール（例：v2.45.0）
+# GitHubリリースページ: https://github.com/Azure/azure-cli/releases/tag/azure-cli-2.45.0
 $ProgressPreference = 'SilentlyContinue'
-Invoke-WebRequest -Uri "https://azcliprod.blob.core.windows.net/msi/azure-cli-2.51.0-x64.msi" -OutFile ".\AzureCLI.msi"
+Invoke-WebRequest -Uri "https://azcliprod.blob.core.windows.net/msi/azure-cli-2.45.0.msi" -OutFile ".\AzureCLI.msi"
+Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+Remove-Item ".\AzureCLI.msi"
+```
+
+##### 例: v2.45.0のMSIをインストールする場合
+
+```powershell
+# GitHubリリースページで確認: https://github.com/Azure/azure-cli/releases/tag/azure-cli-2.45.0
+Invoke-WebRequest -Uri "https://azcliprod.blob.core.windows.net/msi/azure-cli-2.45.0.msi" -OutFile ".\AzureCLI.msi"
 Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
 Remove-Item ".\AzureCLI.msi"
 ```
