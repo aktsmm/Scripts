@@ -110,6 +110,110 @@
 
 > **注意**: Azure PowerShell も常に**最新バージョン**をインストールします。既存のインストールがある場合は最新版に更新されます。
 
+## 特定のバージョンをインストールしたい場合
+
+このスクリプトは最新バージョンのインストールを前提としていますが、特定のバージョンが必要な場合は以下の方法で手動インストールできます：
+
+### Azure CLI 特定バージョンのインストール
+
+#### 1. WinGet を使用した特定バージョンのインストール
+
+```powershell
+# 特定のバージョンを指定してインストール（例：2.67.0）
+winget install --exact --id Microsoft.AzureCLI --version 2.67.0
+```
+
+#### 2. PowerShell + MSI インストーラーでの特定バージョンインストール
+
+```powershell
+# 特定のバージョンのMSIインストーラーをダウンロード・インストール（例：2.51.0）
+$ProgressPreference = 'SilentlyContinue'
+Invoke-WebRequest -Uri "https://azcliprod.blob.core.windows.net/msi/azure-cli-2.51.0-x64.msi" -OutFile ".\AzureCLI.msi"
+Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'
+Remove-Item ".\AzureCLI.msi"
+```
+
+#### 3. ZIP パッケージでの特定バージョンインストール
+
+```powershell
+# 特定のバージョンのZIPパッケージをダウンロード（例：2.57.0）
+$version = "2.57.0"
+$url = "https://azcliprod.blob.core.windows.net/zip/azure-cli-$version-x64.zip"
+Invoke-WebRequest -Uri $url -OutFile "azure-cli-$version.zip"
+# 手動で展開して環境変数PATHに追加
+```
+
+### Azure PowerShell 特定バージョンのインストール
+
+#### 1. 特定バージョンのAzモジュールをインストール
+
+```powershell
+# 特定のバージョンを指定してインストール（例：12.0.0）
+Install-Module -Name Az -RequiredVersion 12.0.0 -Repository PSGallery -Force
+
+# または特定のサブモジュールのみを特定バージョンでインストール
+Install-Module -Name Az.Accounts -RequiredVersion 2.19.0 -Force
+Install-Module -Name Az.Resources -RequiredVersion 6.12.0 -Force
+```
+
+#### 2. 既存のモジュールを特定バージョンに更新
+
+```powershell
+# 特定のバージョンに更新
+Update-Module -Name Az -RequiredVersion 12.0.0 -Force
+```
+
+#### 3. インストール済みバージョンの確認
+
+```powershell
+# インストール済みのすべてのバージョンを確認
+Get-Module Az -ListAvailable | Select-Object Name, Version
+
+# 特定のモジュールのバージョン確認
+Get-Module Az.Accounts -ListAvailable | Select-Object Name, Version
+```
+
+### 特定バージョン管理のベストプラクティス
+
+#### 利用可能なバージョンの確認
+
+```powershell
+# Azure CLIの利用可能なバージョン確認
+# https://github.com/Azure/azure-cli/releases で最新情報を確認
+
+# Azure PowerShellの利用可能なバージョン確認
+Find-Module Az -AllVersions | Select-Object Name, Version | Sort-Object Version -Descending
+
+# PowerShell Galleryで特定のモジュールのバージョン確認
+Find-Module Az.Accounts -AllVersions | Select-Object Name, Version
+```
+
+#### 複数バージョンの共存
+
+```powershell
+# 複数バージョンのAzure PowerShellを並行してインストール
+Install-Module -Name Az -RequiredVersion 11.0.0 -Force -AllowClobber
+Install-Module -Name Az -RequiredVersion 12.0.0 -Force -AllowClobber
+
+# 特定のバージョンを明示的にインポート
+Import-Module Az -RequiredVersion 11.0.0
+```
+
+#### 環境別のバージョン管理
+
+```powershell
+# 開発環境：最新版
+Install-Module -Name Az -Force
+
+# 本番環境：固定バージョン
+Install-Module -Name Az -RequiredVersion 11.6.0 -Force
+
+# テスト環境：プレビュー版（必要に応じて）
+Install-Module -Name AzPreview -Force
+```
+
+> **重要**: 特定のバージョンをインストールする場合は、セキュリティ更新とバグ修正を考慮して定期的にバージョンを見直してください。Azure CLIとAzure PowerShellの[リリースノート](https://github.com/Azure/azure-cli/releases)と[PowerShellリリースノート](https://github.com/Azure/azure-powershell/releases)を確認することを推奨します。
+
 ## ログ出力
 
 スクリプト実行時に詳細なログが出力されます：
@@ -247,7 +351,7 @@ Get-Module Az.* -ListAvailable | Sort-Object Name
 # Azure PowerShell: https://github.com/Azure/azure-powershell/releases
 ```
 
-### バージョン管理のベストプラクティス
+### 一般的なバージョン管理のベストプラクティス
 
 - **開発環境**: 最新バージョンの使用を推奨（新機能とセキュリティ更新）
 - **本番環境**: 特定バージョンの固定が必要な場合は、別途手動インストールを検討
