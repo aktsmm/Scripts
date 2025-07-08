@@ -176,6 +176,21 @@ az login
 
 ## 使用方法
 
+### 🖼️ 使用イメージ
+
+<details>
+<summary><strong>実行画面のサンプル</strong> - クリックして表示</summary>
+
+#### 診断設定分析実行画面
+
+<img width="400" alt="診断設定分析実行画面" src="https://github.com/user-attachments/assets/82ee95b6-38df-4e05-88f5-5c9a04652a1a" />
+
+#### 分析結果表示画面
+
+<img width="400" alt="分析結果表示画面" src="https://github.com/user-attachments/assets/d2f923a8-d2e1-4443-8a6b-7f0bf86902c5" />
+
+</details>
+
 ### ✨ 新機能: タイムアウト付き対話入力
 
 - **自動進行**: 選択入力で 5 秒タイムアウト後、デフォルト値で自動進行
@@ -187,6 +202,16 @@ az login
 - **テナント切り替え**: 実行中に別のテナントへの再ログイン
 - **サブスクリプション切り替え**: ログイン後の利用可能サブスクリプション選択
 - **柔軟な認証**: 特定テナント ID または通常ログインを選択可能
+
+### 🖼️ 実行画面イメージ
+
+<img src="https://github.com/user-attachments/assets/82ee95b6-38df-4e05-88f5-5c9a04652a1a" alt="AzAnalyzeDiag実行画面1 - Azure接続情報と対話選択" width="400">
+
+_Azure 接続情報の確認と再ログイン選択画面_
+
+<img src="https://github.com/user-attachments/assets/d2f923a8-d2e1-4443-8a6b-7f0bf86902c5" alt="AzAnalyzeDiag実行画面2 - 診断設定分析結果表示" width="400">
+
+_診断設定分析結果とカバレッジ統計の表示画面_
 
 ### 基本的な実行方法
 
