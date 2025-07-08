@@ -1,11 +1,12 @@
 # =============================================================================
 # Azure診断設定とLog Analytics Workspace一覧表示スクリプト
 # =============================================================================
-# 概要: Azure環境内のすべてのリソースの診断設定を分析し、
-#       Log Analytics Workspaceの利用状況を統計表示するスクリプト
+# 概要: Azure環境内のリソースログをサポートするリソースの診断設定を分析し、
+#       Log Analytics Workspaceの利用状況を統計表示するスクリプト（リソースログ専用版）
 # https://learn.microsoft.com/ja-jp/azure/azure-monitor/reference/logs-index 準拠
-# 作成日: 2025年7月8日　作成者：yamapan
+# 作成日: 2025年1月4日　作成者：yamapan
 # ライセンス: MIT License
+# 重要: リソースログ（診断ログ）をサポートするリソースタイプのみに厳選（158種類）
 # =============================================================================
 
 [CmdletBinding()]
@@ -63,8 +64,9 @@ function Read-HostWithTimeout {
 }
 
 # スクリプト開始時の処理
-Write-Host "=== Azure診断設定分析スクリプト開始 ===" -ForegroundColor Cyan
+Write-Host "=== Azure診断設定分析スクリプト開始（リソースログ対応版） ===" -ForegroundColor Cyan
 Write-Host "実行時刻: $(Get-Date -Format 'yyyy年MM月dd日 HH:mm:ss')" -ForegroundColor Gray
+Write-Host "注意: リソースログ（診断ログ）をサポートするリソースのみ分析対象" -ForegroundColor Yellow
 
 # 実行時間計測用
 $startTime = Get-Date
@@ -79,8 +81,9 @@ Write-Host "`n=== Azure接続情報の確認 ===" -ForegroundColor Green
 # 診断ログをサポートする主要リソースタイプの定義（効率化のため）
 # =============================================================================
 
-# Microsoft Learn ドキュメントに基づく診断ログサポート対象リソースタイプ（完全版）
+# Microsoft Learn ドキュメントに基づく診断ログサポート対象リソースタイプ（厳選版）
 # 参照: https://learn.microsoft.com/ja-jp/azure/azure-monitor/reference/logs-index
+# 注意: ログカテゴリが「N/A」のリソースタイプは除外済み（リソースログ非対応のため）
 $supportedResourceTypes = @(
     # Microsoft.AAD
     "Microsoft.AAD/DomainServices",
@@ -129,7 +132,7 @@ $supportedResourceTypes = @(
     # Microsoft.Batch
     "Microsoft.Batch/batchAccounts",
     
-    # Microsoft.BotService
+    # Microsoft.BotService（リソースログ対応済み）
     "Microsoft.BotService/botServices",
     
     # Microsoft.Cache (Redis)
@@ -159,9 +162,8 @@ $supportedResourceTypes = @(
     # Microsoft.Community
     "Microsoft.Community/communityTrainings",
     
-    # Microsoft.Compute
+    # Microsoft.Compute（リソースログ対応分のみ）
     "Microsoft.Compute/virtualMachines",
-    "Microsoft.Compute/virtualMachineScaleSets",
     
     # Microsoft.ContainerInstance
     "Microsoft.ContainerInstance/containerGroups",
@@ -224,6 +226,9 @@ $supportedResourceTypes = @(
     "Microsoft.DocumentDB/cassandraClusters",
     "Microsoft.DocumentDB/mongoClusters",
     
+    # Microsoft.Edge (新規追加)
+    "Microsoft.Edge/diagnostics",
+    
     # Microsoft.EventGrid
     "Microsoft.EventGrid/topics",
     "Microsoft.EventGrid/domains",
@@ -240,6 +245,9 @@ $supportedResourceTypes = @(
     "Microsoft.HealthcareApis/workspaces/fhirservices",
     "Microsoft.HealthcareApis/workspaces/iotconnectors",
     
+    # Microsoft.HealthDataAIServices（新規追加）
+    "Microsoft.HealthDataAIServices/deidServices",
+    
     # Microsoft.Insights (Application Insights)
     "Microsoft.Insights/components",
     "Microsoft.Insights/autoscalesettings",
@@ -248,6 +256,15 @@ $supportedResourceTypes = @(
     # Microsoft.KeyVault
     "Microsoft.KeyVault/vaults",
     "Microsoft.KeyVault/managedHSMs",
+    
+    # Microsoft.Kubernetes（新規追加）
+    "Microsoft.Kubernetes/connectedClusters",
+    
+    # Microsoft.Kusto（新規追加）
+    "Microsoft.Kusto/clusters",
+    
+    # Microsoft.LoadTestService（新規追加）
+    "Microsoft.LoadTestService/loadtests",
     
     # Microsoft.Logic (Logic Apps)
     "Microsoft.Logic/IntegrationAccounts",
@@ -285,6 +302,23 @@ $supportedResourceTypes = @(
     "Microsoft.Network/networkInterfaces",
     "Microsoft.Network/privateEndpoints",
     "Microsoft.Network/privateLinkServices",
+    
+    # Microsoft.NetworkCloud（新規追加）
+    "Microsoft.NetworkCloud/bareMetalMachines",
+    "Microsoft.NetworkCloud/clusterManagers",
+    "Microsoft.NetworkCloud/clusters",
+    "Microsoft.NetworkCloud/kubernetesClusters",
+    "Microsoft.NetworkCloud/storageAppliances",
+    
+    # Microsoft.NetworkFunction（新規追加）
+    "Microsoft.NetworkFunction/azureTrafficCollectors",
+    
+    # Microsoft.NotificationHubs（新規追加）
+    "Microsoft.NotificationHubs/namespaces",
+    "Microsoft.NotificationHubs/namespaces/notificationHubs",
+    
+    # Microsoft.OpenEnergyPlatform（新規追加）
+    "Microsoft.OpenEnergyPlatform/energyServices",
     
     # Microsoft.OpenLogisticsPlatform
     "Microsoft.OpenLogisticsPlatform/Workspaces",
@@ -343,18 +377,16 @@ $supportedResourceTypes = @(
     # Microsoft.Singularity
     "Microsoft.Singularity/accounts",
     
-    # Microsoft.Sql
+    # Microsoft.Sql（リソースログ対応分のみ）
     "Microsoft.Sql/managedInstances",
     "Microsoft.Sql/managedInstances/databases",
-    "Microsoft.Sql/servers",
     "Microsoft.Sql/servers/databases",
     
     # Microsoft.StandbyPool
     "Microsoft.StandbyPool/standbycontainergrouppools",
     "Microsoft.StandbyPool/standbyvirtualmachinepools",
     
-    # Microsoft.Storage
-    "Microsoft.Storage/storageAccounts",
+    # Microsoft.Storage（リソースログ対応サービス別のみ）
     "Microsoft.Storage/storageAccounts/blobServices",
     "Microsoft.Storage/storageAccounts/fileServices",
     "Microsoft.Storage/storageAccounts/queueServices",
@@ -384,10 +416,11 @@ $supportedResourceTypes = @(
     "Microsoft.WorkloadMonitor/monitors"
 )
 
-Write-Host "`n=== リソースタイプフィルター情報 ===" -ForegroundColor Green
-Write-Host "診断ログをサポートするリソースタイプ数: $($supportedResourceTypes.Count)" -ForegroundColor Yellow
-Write-Host "Microsoft Learn公式ドキュメント準拠（完全版）" -ForegroundColor Gray
-Write-Host "効率化により、診断ログ非対応のリソースタイプをスキップします" -ForegroundColor Gray
+Write-Host "`n=== リソースタイプフィルター情報（リソースログ限定版） ===" -ForegroundColor Green
+Write-Host "リソースログをサポートするリソースタイプ数: $($supportedResourceTypes.Count)" -ForegroundColor Yellow
+Write-Host "Microsoft Learn公式ドキュメント準拠（最新版：2025年01月04日リソースログ限定更新）" -ForegroundColor Gray
+Write-Host "重要: ログカテゴリ「N/A」のリソースタイプは除外済み" -ForegroundColor Red
+Write-Host "効率化により、リソースログ非対応のリソースタイプをスキップします" -ForegroundColor Gray
 
 try {
     # 現在のAzureコンテキストを取得
