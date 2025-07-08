@@ -386,7 +386,8 @@ $supportedResourceTypes = @(
     "Microsoft.StandbyPool/standbycontainergrouppools",
     "Microsoft.StandbyPool/standbyvirtualmachinepools",
     
-    # Microsoft.Storage（リソースログ対応サービス別のみ）
+    # Microsoft.Storage（親リソース＋サービス別リソースログ対応）
+    "Microsoft.Storage/storageAccounts",
     "Microsoft.Storage/storageAccounts/blobServices",
     "Microsoft.Storage/storageAccounts/fileServices",
     "Microsoft.Storage/storageAccounts/queueServices",
@@ -629,6 +630,23 @@ if ($Scope -eq "Tenant") {
             $allResourcesData += $subResources | ForEach-Object { 
                 $_ | Add-Member -NotePropertyName 'SubscriptionName' -NotePropertyValue $subscription.Name -PassThru
             }
+            # Storage Accountのサービス別リソースも取得してallResourcesDataに追加
+            $storageAccounts = $subResources | Where-Object { $_.ResourceType -eq "Microsoft.Storage/storageAccounts" }
+            foreach ($sa in $storageAccounts) {
+                $childTypes = @("blobServices", "fileServices", "queueServices", "tableServices")
+                foreach ($child in $childTypes) {
+                    $childResourceId = "$($sa.Id)/$child/default"
+                    try {
+                        $childRes = Get-AzResource -ResourceId $childResourceId -ErrorAction SilentlyContinue
+                        if ($childRes) {
+                            $childRes | Add-Member -NotePropertyName 'SubscriptionName' -NotePropertyValue $subscription.Name -Force
+                            $allResourcesData += $childRes
+                        }
+                    } catch {
+                        # 取得できない場合はスキップ
+                    }
+                }
+            }
             
             Write-Host "  取得対象リソース数: $($subResources.Count)" -ForegroundColor Gray
             Write-Host "  (診断ログサポート対象のみ)" -ForegroundColor Gray
@@ -647,6 +665,23 @@ if ($Scope -eq "Tenant") {
     $filteredResources = Get-AzResource | Where-Object { $_.ResourceType -in $supportedResourceTypes }
     $allResourcesData = $filteredResources | ForEach-Object { 
         $_ | Add-Member -NotePropertyName 'SubscriptionName' -NotePropertyValue $currentContext.Subscription.Name -PassThru
+    }
+    # Storage Accountのサービス別リソースも取得してallResourcesDataに追加
+    $storageAccounts = $filteredResources | Where-Object { $_.ResourceType -eq "Microsoft.Storage/storageAccounts" }
+    foreach ($sa in $storageAccounts) {
+        $childTypes = @("blobServices", "fileServices", "queueServices", "tableServices")
+        foreach ($child in $childTypes) {
+            $childResourceId = "$($sa.Id)/$child/default"
+            try {
+                $childRes = Get-AzResource -ResourceId $childResourceId -ErrorAction SilentlyContinue
+                if ($childRes) {
+                    $childRes | Add-Member -NotePropertyName 'SubscriptionName' -NotePropertyValue $currentContext.Subscription.Name -Force
+                    $allResourcesData += $childRes
+                }
+            } catch {
+                # 取得できない場合はスキップ
+            }
+        }
     }
     
     $totalAvailableResources = (Get-AzResource).Count
@@ -973,7 +1008,6 @@ Write-Host "処理時間: $((Get-Date) - $startTime)" -ForegroundColor Gray
 .NOTES
     前提条件:
     - Azure PowerShell モジュール (Az) がインストールされている
-    - Azure CLI がインストールされている
     - Azure にログイン済み (Connect-AzAccount 実行済み)
     - 対象サブスクリプションに対する Reader 権限以上が必要
 

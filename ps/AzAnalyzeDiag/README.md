@@ -7,13 +7,13 @@ Azure 環境内のすべてのリソースの診断設定、リソースログ(�
 ### Microsoft Learn 公式ドキュメント準拠
 
 - **準拠先**: [Azure Monitor リファレンス - ログ インデックス](https://learn.microsoft.com/ja-jp/azure/azure-monitor/reference/logs-index)
-- **対象リソース数**: **158 種類** のリソースログサポート対象リソースタイプ
+- **対象リソース数**: **159 種類** のリソースログサポート対象リソースタイプ
 - **効率化**: ログカテゴリ「N/A」のリソース（メトリクスのみサポート）を事前除外して高速分析
 
 ### 🎯 分析対象リソースタイプ一覧
 
 <details>
-<summary><strong>対象リソース一覧（158種類・リソースログ限定）</strong> - クリックして展開</summary>
+<summary><strong>対象リソース一覧（約159種類・リソースログ限定）</strong> - クリックして展開</summary>
 
 #### 🔐 認証・セキュリティ
 
@@ -38,7 +38,7 @@ Azure 環境内のすべてのリソースの診断設定、リソースログ(�
 
 #### 💿 ストレージ・データベース
 
-- **Microsoft.Storage**: Storage Accounts、Blob Services、File Services、Queue Services、Table Services
+- **Microsoft.Storage**: ⚡**階層別詳細分析** - Storage Account 全体 + Blob Services、File Services、Queue Services、Table Services（親・子リソース両方を個別に診断設定分析）
 - **Microsoft.Sql**: SQL Managed Instances、SQL Databases、SQL Servers
 - **Microsoft.DocumentDB**: Cosmos DB、Cassandra Clusters、Mongo Clusters
 - **Microsoft.DBforMySQL**: Flexible Servers、MySQL Servers
@@ -141,7 +141,7 @@ Azure 環境内のすべてのリソースの診断設定、リソースログ(�
 - **診断設定の全体分析**: 対象リソースの診断設定状況を包括的に分析
 - **カバレッジ統計**: 診断設定済み/未設定リソースの割合を表示
 - **Log Analytics Workspace 統計**: ワークスペース別の利用状況を表示
-- **リソースタイプ別統計**: タイプ別の診断設定状況を表示
+- **リソースタイプ別統計**: タイプ別の診断設定状況を表示（Storage Account は階層別詳細分析）
 - **CSV 出力機能**: 分析結果を CSV ファイルにエクスポート
 - **タイムアウト付き対話機能**: 5 秒タイムアウトで自動進行（デフォルト値使用）
 - **再ログイン機能**: テナント/サブスクリプション切り替えのための再認証
@@ -150,7 +150,7 @@ Azure 環境内のすべてのリソースの診断設定、リソースログ(�
 
 - **サブスクリプション単位**: 現在のサブスクリプションのみ（推奨・高速）
 - **テナント全体**: テナント内のすべてのサブスクリプションを横断分析
-- **スマートフィルタリング**: Microsoft Learn 準拠の 122 種類のリソースタイプのみを対象
+- **スマートフィルタリング**: Microsoft Learn 準拠の 158 種類のリソースタイプのみを対象
 - **効率化**: 診断ログ非対応リソースを事前除外し、分析時間を大幅短縮
 - **重複排除**: 同一リソースに複数診断設定がある場合の適切なカウント
 
@@ -237,13 +237,13 @@ _診断設定分析結果とカバレッジ統計の表示画面_
 
 ### パラメーター詳細
 
-| パラメーター                         | 型     | デフォルト       | 説明                                      |
-| ------------------------------------ | ------ | ---------------- | ----------------------------------------- |
-| `AutoExportCsv`                      | bool   | `$false`         | CSV 出力を自動実行                        |
-| `CsvOutputPath`                      | string | 自動生成         | CSV 出力ファイルパス                      |
-| `Scope`                              | string | `"Subscription"` | 分析スコープ（`Subscription` / `Tenant`） |
-| `NonInteractive`                     | bool   | `$false`         | 対話モード無効化                          |
-| `IncludeResourcesWithoutDiagnostics` | bool   | `$false`         | 診断設定なしリソースも CSV 出力           |
+| パラメーター                         | 型     | デフォルト       | 説明                                                      |
+| ------------------------------------ | ------ | ---------------- | --------------------------------------------------------- |
+| `AutoExportCsv`                      | bool   | `$false`         | CSV 出力を自動実行                                        |
+| `CsvOutputPath`                      | string | 自動生成         | CSV 出力ファイルパス                                      |
+| `Scope`                              | string | `"Subscription"` | 分析スコープ（`Subscription` / `Tenant`）                 |
+| `NonInteractive`                     | bool   | `$false`         | 対話モード無効化                                          |
+| `IncludeResourcesWithoutDiagnostics` | bool   | `$false`         | 診断設定なしリソースも CSV 出力（完全なカバレッジ分析用） |
 
 ## 実行例
 
@@ -332,7 +332,27 @@ _診断設定分析結果とカバレッジ統計の表示画面_
 
 ## 出力内容
 
-### 📈 コンソール出力
+### � コンソール出力 vs CSV 出力の違い
+
+**重要な違い**：コンソール出力と CSV 出力では含まれるデータの範囲と詳細度が異なります。
+
+| 項目                     | コンソール出力                             | CSV 出力（デフォルト）                 | CSV 出力（完全版）                                        |
+| ------------------------ | ------------------------------------------ | -------------------------------------- | --------------------------------------------------------- |
+| **表示対象**             | 全リソース（診断設定あり/なし両方）        | 診断設定ありリソースのみ               | 全リソース（`-IncludeResourcesWithoutDiagnostics $true`） |
+| **列の省略**             | 画面幅制限により右端列が省略される場合あり | 全列が完全に記録される                 | 全列が完全に記録される                                    |
+| **Storage Account 詳細** | 省略される可能性あり                       | 完全に記録される                       | 完全に記録される                                          |
+| **Event Hub 詳細**       | 省略される可能性あり                       | 完全に記録される                       | 完全に記録される                                          |
+| **WorkspaceId**          | 表示されない                               | 完全なリソース ID が記録される         | 完全なリソース ID が記録される                            |
+| **フィルタリング**       | なし                                       | デフォルトで診断設定ありのみ           | パラメータで制御可能                                      |
+| **データ活用**           | 一時的な確認用                             | Excel 分析・レポート作成・自動化に最適 | 完全なカバレッジ分析に最適                                |
+
+**推奨用途**：
+
+- **コンソール出力**：クイックチェック・概要確認
+- **CSV 出力（デフォルト）**：設定済みリソースの詳細分析
+- **CSV 出力（完全版）**：カバレッジ分析・コンプライアンスチェック
+
+### �📈 コンソール出力
 
 #### 1. Azure 接続情報（新機能）
 
@@ -363,18 +383,24 @@ _診断設定分析結果とカバレッジ統計の表示画面_
 ```
 ResourceType                           TotalResources WithDiagnostics WithoutDiagnostics CoveragePercent
 ------------                           -------------- --------------- ------------------ ---------------
-Microsoft.Storage/storageAccounts                 25              25                  0           100%
-Microsoft.KeyVault/vaults                         12              12                  0           100%
-Microsoft.Sql/servers/databases                    8               6                  2            75%
+Microsoft.Storage/storageAccounts                     25              20                  5            80%
+Microsoft.Storage/storageAccounts/blobServices        25              25                  0           100%
+Microsoft.Storage/storageAccounts/fileServices        20              18                  2            90%
+Microsoft.Storage/storageAccounts/queueServices       15              10                  5            67%
+Microsoft.Storage/storageAccounts/tableServices       12               8                  4            67%
+Microsoft.KeyVault/vaults                             12              12                  0           100%
+Microsoft.Sql/servers/databases                        8               6                  2            75%
 ```
 
 #### 4. 診断設定詳細一覧
 
 ```
-ResourceGroup    ResourceType                   ResourceName         DiagnosticSettingName LogAnalyticsWorkspace
--------------    ------------                   ------------         --------------------- ---------------------
-rg-production    Microsoft.Storage/storageAccounts mystorageaccount01  diag-storage-001      law-central-logs
-rg-development   Microsoft.KeyVault/vaults         kv-dev-secrets      vault-diagnostics     law-security-logs
+ResourceGroup    ResourceType                                    ResourceName                     DiagnosticSettingName LogAnalyticsWorkspace
+-------------    ------------                                    ------------                     --------------------- ---------------------
+rg-production    Microsoft.Storage/storageAccounts/blobServices  mystorageaccount01/default       diag-blob-001         law-central-logs
+rg-production    Microsoft.Storage/storageAccounts/fileServices  mystorageaccount01/default       diag-file-001         law-central-logs
+rg-production    Microsoft.Storage/storageAccounts/queueServices mystorageaccount01/default       diag-queue-001        law-central-logs
+rg-development   Microsoft.KeyVault/vaults                       kv-dev-secrets                   vault-diagnostics     law-security-logs
 ```
 
 #### 5. Log Analytics Workspace 別統計
@@ -389,21 +415,38 @@ law-security-logs      28
 
 ### 📄 CSV 出力
 
-CSV 出力には以下の列が含まれます：
+**🎯 CSV 出力の優位性**：
 
-| 列名                    | 説明                         |
-| ----------------------- | ---------------------------- |
-| `SubscriptionName`      | サブスクリプション名         |
-| `ResourceGroup`         | リソースグループ名           |
-| `ResourceType`          | リソースタイプ               |
-| `ResourceName`          | リソース名                   |
-| `DiagnosticSettingName` | 診断設定名                   |
-| `LogAnalyticsWorkspace` | Log Analytics Workspace 名   |
-| `WorkspaceId`           | Workspace のリソース ID      |
-| `StorageAccount`        | ストレージアカウント設定     |
-| `EventHub`              | Event Hub 設定               |
-| `ResourceId`            | リソースの完全 ID            |
-| `HasDiagnosticSettings` | 診断設定の有無（True/False） |
+- **完全なデータ**：コンソール出力で省略される右端列も含め、すべてのデータが記録されます
+- **詳細な Workspace 情報**：`WorkspaceId`列により完全なリソース ID が取得できます
+- **柔軟なフィルタリング**：`-IncludeResourcesWithoutDiagnostics`パラメータで出力範囲を制御
+- **データ分析対応**：Excel、Power BI、Python などでの詳細分析が可能
+
+**📋 CSV 出力の使い分け**：
+
+```powershell
+# 🔍 診断設定済みリソースの詳細分析（デフォルト）
+.\AzAnalyzeDiag.ps1 -AutoExportCsv $true
+
+# 📊 完全なカバレッジ分析（診断設定なしリソースも含む）
+.\AzAnalyzeDiag.ps1 -IncludeResourcesWithoutDiagnostics $true -AutoExportCsv $true
+```
+
+**📄 CSV 列の詳細説明**：
+
+| 列名                    | 説明                         | コンソール表示        |
+| ----------------------- | ---------------------------- | --------------------- |
+| `SubscriptionName`      | サブスクリプション名         | ✅ 表示               |
+| `ResourceGroup`         | リソースグループ名           | ✅ 表示               |
+| `ResourceType`          | リソースタイプ               | ✅ 表示               |
+| `ResourceName`          | リソース名                   | ✅ 表示               |
+| `DiagnosticSettingName` | 診断設定名                   | ✅ 表示               |
+| `LogAnalyticsWorkspace` | Log Analytics Workspace 名   | ⚠️ 省略される場合あり |
+| `WorkspaceId`           | Workspace のリソース ID      | ❌ 表示されない       |
+| `StorageAccount`        | ストレージアカウント設定     | ⚠️ 省略される場合あり |
+| `EventHub`              | Event Hub 設定               | ⚠️ 省略される場合あり |
+| `ResourceId`            | リソースの完全 ID            | ❌ 表示されない       |
+| `HasDiagnosticSettings` | 診断設定の有無（True/False） | ❌ 表示されない       |
 
 ## パフォーマンス最適化
 
@@ -512,6 +555,70 @@ $allResults = Import-Csv "diagnostic-settings-*.csv"
 $unsetResources = $allResults | Where-Object { $_.HasDiagnosticSettings -eq "False" }
 $unsetResources | Export-Csv "compliance-gaps.csv" -NoTypeInformation
 ```
+
+### 📊 CSV 出力を活用した詳細分析
+
+```powershell
+# 1. Storage Account サービス別の診断設定分析
+$results = Import-Csv "diagnostic-settings-*.csv"
+
+# Storage Account サービス種別ごとの統計
+$storageServiceStats = $results | Where-Object { $_.ResourceType -like "Microsoft.Storage/storageAccounts/*" } |
+                      Group-Object ResourceType | ForEach-Object {
+    $serviceType = $_.Name.Split('/')[-1]  # blobServices, fileServices, etc.
+    $totalCount = $_.Count
+    $withDiag = ($_.Group | Where-Object { $_.HasDiagnosticSettings -eq "True" }).Count
+    [PSCustomObject]@{
+        ServiceType = $serviceType
+        TotalResources = $totalCount
+        WithDiagnostics = $withDiag
+        Coverage = [math]::Round(($withDiag / $totalCount) * 100, 2)
+    }
+} | Sort-Object Coverage -Descending
+
+# Storage Account インスタンス別の詳細分析
+$storageInstanceStats = $results | Where-Object { $_.ResourceType -like "Microsoft.Storage/storageAccounts/*" } |
+                       Group-Object { $_.ResourceName.Split('/')[0] } | ForEach-Object {
+    $accountName = $_.Name
+    $services = $_.Group | Group-Object ResourceType
+    [PSCustomObject]@{
+        StorageAccount = $accountName
+        BlobDiagnostics = ($services | Where-Object Name -like "*blobServices").Count -gt 0
+        FileDiagnostics = ($services | Where-Object Name -like "*fileServices").Count -gt 0
+        QueueDiagnostics = ($services | Where-Object Name -like "*queueServices").Count -gt 0
+        TableDiagnostics = ($services | Where-Object Name -like "*tableServices").Count -gt 0
+    }
+}
+
+# 2. Log Analytics Workspace別のリソース分布
+$workspaceStats = $results | Where-Object { $_.LogAnalyticsWorkspace -ne "未設定" } |
+                 Group-Object LogAnalyticsWorkspace, ResourceType |
+                 Select-Object Name, Count | Sort-Object Count -Descending
+
+# 3. 診断設定の転送先組み合わせ分析
+$destinationAnalysis = $results | Select-Object ResourceName, LogAnalyticsWorkspace, StorageAccount, EventHub |
+                      Group-Object LogAnalyticsWorkspace, StorageAccount, EventHub |
+                      Select-Object Name, Count
+
+# 4. サブスクリプション横断でのカバレッジ比較（テナント分析時）
+$subStats = $results | Group-Object SubscriptionName | ForEach-Object {
+    $total = $_.Count
+    $withDiag = ($_.Group | Where-Object { $_.HasDiagnosticSettings -eq "True" }).Count
+    [PSCustomObject]@{
+        Subscription = $_.Name
+        Total = $total
+        WithDiagnostics = $withDiag
+        Coverage = [math]::Round(($withDiag / $total) * 100, 2)
+    }
+} | Sort-Object Coverage -Descending
+```
+
+**💡 CSV 活用のメリット**：
+
+- **完全なデータ**：コンソール出力で省略される情報も含めて分析可能
+- **Excel 連携**：ピボットテーブルでの多次元分析
+- **自動化対応**：スクリプトによる定期レポート生成
+- **カスタム分析**：WorkspaceId や ResourceId を使った詳細調査
 
 ## ライセンス
 
