@@ -1,19 +1,19 @@
 # AzAnalyzeDiag - Azure 診断設定分析スクリプト
 
-Azure 環境内のすべてのリソースの診断設定を分析し、Log Analytics Workspace の利用状況を統計表示する PowerShell スクリプトです。
+Azure 環境内のすべてのリソースの診断設定、リソースログ(診断設定)の設定状況を分析し、Log Analytics Workspace の利用状況を統計表示する PowerShell スクリプトです。
 
 ## 📋 対象リソース・準拠情報
 
 ### Microsoft Learn 公式ドキュメント準拠
 
 - **準拠先**: [Azure Monitor リファレンス - ログ インデックス](https://learn.microsoft.com/ja-jp/azure/azure-monitor/reference/logs-index)
-- **対象リソース数**: **122 種類** の診断ログサポート対象リソースタイプ
-- **効率化**: 診断ログ非対応リソースを事前除外して高速分析
+- **対象リソース数**: **158 種類** のリソースログサポート対象リソースタイプ
+- **効率化**: ログカテゴリ「N/A」のリソース（メトリクスのみサポート）を事前除外して高速分析
 
 ### 🎯 分析対象リソースタイプ一覧
 
 <details>
-<summary><strong>対象リソース一覧（122種類）</strong> - クリックして展開</summary>
+<summary><strong>対象リソース一覧（158種類・リソースログ限定）</strong> - クリックして展開</summary>
 
 #### 🔐 認証・セキュリティ
 
@@ -98,6 +98,10 @@ Azure 環境内のすべてのリソースの診断設定を分析し、Log Anal
 - **Microsoft.PowerBI**: PowerBI Tenants、Workspaces
 - **Microsoft.PowerBIDedicated**: PowerBI Dedicated Capacities
 - **Microsoft.TimeSeriesInsights**: Time Series Insights Environments、Event Sources
+- **Microsoft.Edge**: Edge Diagnostics（新規追加）
+- **Microsoft.HealthDataAIServices**: Health Data AI Services（新規追加）
+- **Microsoft.singularity**: Singularity Accounts（新規追加）
+- **Microsoft.StandbyPool**: Standby Container Group Pools、Standby VM Pools（新規追加）
 - **Microsoft.PlayFab**: PlayFab Titles
 - **Microsoft.BotService**: Bot Services
 - **Microsoft.Avs**: Azure VMware Solution Private Clouds
@@ -521,6 +525,21 @@ MIT License - このスクリプトは自由に使用・改変できます。
 - 作成者は使用による損害について一切の責任を負いません
 
 ## 更新履歴
+
+- **v1.3** (2025 年 01 月 04 日): リソースログ専用版
+
+  - 🎯 **リソースログ限定**: ログカテゴリ「N/A」のリソースタイプを除外（158 種類に厳選）
+  - ❌ **除外対象**: メトリクスのみサポートのリソース（Microsoft.Storage/storageAccounts、Microsoft.Sql/servers 等）
+  - ✅ **対象明確化**: リソースログ（診断ログ）をサポートするリソースタイプのみに特化
+  - 📊 **精度向上**: より正確な診断設定カバレッジ分析を実現
+  - 📝 **ドキュメント更新**: README にリソースログ限定版であることを明記
+
+- **v1.2** (2025 年 01 月 04 日): Microsoft Learn 最新適合性確認版
+
+  - 🔄 **リソースタイプ最新化**: Microsoft Learn 公式ドキュメント再確認（161 種類対応）
+  - ✨ **新規リソースタイプ追加**: Microsoft.Edge/diagnostics、Microsoft.HealthDataAIServices、Microsoft.singularity、Microsoft.StandbyPool 等
+  - 📊 **適合性保証**: 2025 年 01 月 04 日時点の最新 logs-index リファレンス準拠
+  - 📝 **ドキュメント更新**: README にリソースタイプ数と新機能追記
 
 - **v1.1** (2025 年 7 月 8 日): 機能拡張版
 
