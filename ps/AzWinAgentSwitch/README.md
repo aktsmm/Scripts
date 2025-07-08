@@ -87,7 +87,36 @@ if ($service.Status -eq "Running") {
 
 #### 参考
 
-- [Azure VM ゲストエージェントの監視とトラブルシューティング](https://learn.microsoft.com/ja-jp/azure/virtual-machines/extensions/agent-windows#monitor-and-troubleshoot-the-azure-vm-agent) #microsoft.docs.mcp
-- [Azure Monitor でのアラート ルールの作成](https://learn.microsoft.com/ja-jp/azure/azure-monitor/alerts/alerts-unified-portal) #microsoft.docs.mcp
-- [Azure Backup の障害とアラート](https://learn.microsoft.com/ja-jp/azure/backup/backup-azure-monitoring-integrate) #microsoft.docs.mcp
-- [Azure Policy の概要](https://learn.microsoft.com/ja-jp/azure/governance/policy/overview) #microsoft.docs.mcp
+- [Azure VM ゲストエージェントの監視とトラブルシューティング](https://learn.microsoft.com/ja-jp/azure/virtual-machines/extensions/agent-windows#monitor-and-troubleshoot-the-azure-vm-agent)
+- [Azure Monitor でのアラート ルールの作成](https://learn.microsoft.com/ja-jp/azure/azure-monitor/alerts/alerts-unified-portal)
+- [Azure Backup の障害とアラート](https://learn.microsoft.com/ja-jp/azure/backup/backup-azure-monitoring-integrate)
+- [Azure Policy の概要](https://learn.microsoft.com/ja-jp/azure/governance/policy/overview)
+
+---
+
+## ライセンス
+
+このスクリプトは MIT ライセンスで公開しています。
+ご自由にご利用・改変・再配布いただけますが、無保証です。
+
+---
+
+Copyright (c) 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
