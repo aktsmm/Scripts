@@ -2,6 +2,9 @@
 # サービス名: WindowsAzureGuestAgent
 # 管理者権限で実行してください
 # $lang で表示言語を切り替え: "ja"（日本語）/ "en"（英語）
+#
+# 作成者: yamapan
+# ライセンス: MIT License
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
