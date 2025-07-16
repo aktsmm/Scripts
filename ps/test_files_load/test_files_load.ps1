@@ -1,7 +1,7 @@
 # === 設定 ===
 $DriveLetter = "V"
 $BaseFolder  = "$DriveLetter`:\LoadTest"
-$FileSizeMB  = 50       # 1ファイルあたりのサイズ
+$FileSizeMB  = 200       # 1ファイルあたりのサイズ
 $FileCount   = 500      # 同時に扱うファイル数
 
 # === フォルダ自動作成（既存があれば連番フォルダにする） ===
