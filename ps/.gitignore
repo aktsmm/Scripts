@@ -9,3 +9,4 @@
 
 # 特定の秘密ファイルを無視
 *_secret.ps1
+*local.settings.json
