@@ -1,0 +1,4 @@
+# Ignore npm cache logs inside the Scripts folder
+# 目的: Scripts フォルダー配下の npm キャッシュログが誤ってコミットされるのを防ぐ
+.npm-cache/_logs 
+.npm-cache/*
