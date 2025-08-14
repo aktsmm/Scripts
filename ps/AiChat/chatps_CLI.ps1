@@ -12,5 +12,3 @@ function ai {
         "エラー: $($_.Exception.Message)"
     }
 }
-
-Pause
