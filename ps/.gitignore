@@ -1,0 +1,11 @@
+# npm キャッシュログを無視
+*.npm-cache/_logs/
+
+# npm キャッシュ全体を無視
+*.npm-cache/*
+
+# 秘密情報を含む PowerShell スクリプトを無視
+*_secret.ps1
+
+# 特定の秘密ファイルを無視
+*_secret.ps1
