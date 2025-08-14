@@ -2,7 +2,10 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-$url = '<YOUR_AZURE_FUNCTION_URL>?code=<YOUR_FUNCTION_CODE>'
+# $url = '<YOUR_AZURE_FUNCTION_URL>?code=<YOUR_FUNCTION_CODE>'
+# グローバルスコープで $url を定義
+$url = 'https://functions10460-e4a3bxfcajggdggr.japaneast-01.azurewebsites.net/api/SendToAzureAI?code=OZlpldbGE0MK4C33LXf9qK24Mgn1ughCyxIZFAIl4RVnAzFuNr5aPg=='
+Set-Variable -Name url -Scope Global -Value $url
 
 # AI 呼び出し関数
 function Get-AIResponse {
