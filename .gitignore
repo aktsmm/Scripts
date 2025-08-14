@@ -3,3 +3,6 @@
 *.npm-cache/_logs/
 *.npm-cache/*
 *_secret.ps1
+
+# Ignore specific secret files
+*_secret.ps1
