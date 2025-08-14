@@ -1,8 +1,11 @@
-# Ignore npm cache logs inside the Scripts folder
-# 目的: Scripts フォルダー配下の npm キャッシュログが誤ってコミットされるのを防ぐ
+# npm キャッシュログを無視
 *.npm-cache/_logs/
+
+# npm キャッシュ全体を無視
 *.npm-cache/*
+
+# 秘密情報を含む PowerShell スクリプトを無視
 *_secret.ps1
 
-# Ignore specific secret files
+# 特定の秘密ファイルを無視
 *_secret.ps1
