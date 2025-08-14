@@ -1,5 +1,5 @@
 # 履歴なし版 AI チャット（毎回独立）
-$url = 'https://functions10460-e4a3bxfcajggdggr.japaneast-01.azurewebsites.net/api/SendToAzureAI?code=OZlpldbGE0MK4C33LXf9qK24Mgn1ughCyxIZFAIl4RVnAzFuNr5aPg=='
+$url = '<YOUR_AZURE_FUNCTION_URL>?code=<YOUR_FUNCTION_CODE>'
 
 function ai {
     param([Parameter(ValueFromRemainingArguments)][string[]]$Text)
