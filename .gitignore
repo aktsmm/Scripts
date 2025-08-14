@@ -1,5 +1,5 @@
 # npm キャッシュログを無視
-*.npm-cache/_logs/
+*.npm-cache/_logs/*
 
 # npm キャッシュ全体を無視
 *.npm-cache/*
