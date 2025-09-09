@@ -15,6 +15,12 @@ BGInfo（Background Information）は、Microsoft Sysinternals が提供する�
 - マシン名
 - OSバージョン
 
+### 🖼️ 実行イメージ
+
+<img width="400" alt="BGInfo実行画面 - システム情報がデスクトップに表示された状態" src="https://github.com/user-attachments/assets/f4aad673-c478-49b4-be6a-974577db4131" />
+
+_BGInfoによりデスクトップ壁紙に表示されるシステム情報の例_
+
 ## 機能
 
 - **自動ダウンロード**: BGInfoが未インストールの場合、Sysinternalsから自動取得
