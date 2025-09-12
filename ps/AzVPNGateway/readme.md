@@ -20,5 +20,5 @@ VPNGW_add.ps1
 https://github.com/aktsmm/Scripts/blob/main/ps/AzVPNGateway/VPNGW_add.ps1
 
 ## 新規でVnetとVPNGATEWAY(とGatewaysubnet)をつくる
-VPNGW_add.ps1
+VPNGW.ps1
 https://github.com/aktsmm/Scripts/blob/main/ps/AzVPNGateway/VPNGW.ps1
