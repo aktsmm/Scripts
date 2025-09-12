@@ -3,7 +3,7 @@
 $Ctime=Get-Date -Format "hhmmss"
 
 # Set required paramerters (Please change the parameters according to your environment)
-## こちらはVpnGw1 or VpnGw1AZ SKU ＋ Basic Public IP の構成は2025/09/ 現在Basic Public IP に対応していないため使えないです。
+## こちらはVpnGw1 or VpnGw1AZ SKU ＋ Basic Public IP の構成はVpnGw1 or VpnGw1AZ SKU が2025/09/ 現在Basic Public IP に対応していないため使えないです。
 $GatewaySku = "Basic" ## Basic or VpnGw1 or VpnGw1AZ　
 $resourceGroupName = "rg-"+$GatewaySku +$Ctime
 $location = "japaneast"
