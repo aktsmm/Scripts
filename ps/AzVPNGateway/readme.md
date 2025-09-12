@@ -17,8 +17,8 @@ https://learn.microsoft.com/ja-jp/azure/vpn-gateway/vpn-gateway-about-vpngateway
 
 ## 既存の環境にVPNGATEWAY(とGatewaysubnet)をつくる
 VPNGW_add.ps1
-https://github.com/aktsmm/Scripts/blob/main/ps/VPNGateway/VPNGW_add.ps1
+https://github.com/aktsmm/Scripts/blob/main/ps/AzVPNGateway/VPNGW_add.ps1
 
 ## 新規でVnetとVPNGATEWAY(とGatewaysubnet)をつくる
 VPNGW_add.ps1
-https://github.com/aktsmm/Scripts/blob/main/ps/VPNGateway/VPNGW.ps1
+https://github.com/aktsmm/Scripts/blob/main/ps/AzVPNGateway/VPNGW.ps1
