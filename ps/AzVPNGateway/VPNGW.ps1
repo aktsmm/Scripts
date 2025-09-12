@@ -1,10 +1,10 @@
-## こちらは VPNGW Basic SKU ＋ Basic Public IP の構成なので、2025/09/ 現在Basic Public IP がデプロイできないため使えないです。
 ##変数名などは環境に合わせて変更してください
 #Get-Date -Format "yyyyMMddhhmmss"
 $Ctime=Get-Date -Format "hhmmss"
 
 # Set required paramerters (Please change the parameters according to your environment)
-$GatewaySku = "VpnGw1" ## Basic or VpnGw1 or VpnGw1AZ
+## こちらはVpnGw1 or VpnGw1AZ SKU ＋ Basic Public IP の構成は2025/09/ 現在Basic Public IP に対応していないため使えないです。
+$GatewaySku = "Basic" ## Basic or VpnGw1 or VpnGw1AZ　
 $resourceGroupName = "rg-"+$GatewaySku +$Ctime
 $location = "japaneast"
 $vnetName = "vnet-"+$GatewaySku
