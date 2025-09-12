@@ -1,4 +1,4 @@
-
+## こちらは VPNGW Basic SKU ＋ Basic Public IP の構成なので、2025/09/ 現在Basic Public IP がデプロイできないため使えないです。
 ##変数名などは環境に合わせて変更してください
 #Get-Date -Format "yyyyMMddhhmmss"
 $Ctime=Get-Date -Format "hhmmss"
@@ -19,7 +19,7 @@ $publicIpName = "VpnGw-pip"
 
  
  # Login to Azure #if you need
-$subscriptionId = "832c4080-181c-476b-9db0-b3ce9596d40a"
+#$subscriptionId = "XXXXX-XXXXXXX-XXXXXXXXX-XXX-XXX"
 #Connect-AzAccount
 #Select-AzSubscription -SubscriptionId $subscriptionId
  
