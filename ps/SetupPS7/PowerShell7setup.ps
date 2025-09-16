@@ -96,11 +96,19 @@ if (-not $ps7ShortcutPath) {
 # 初期ディレクトリをデスクトップに設定する
 $pwshProfileTemplate = @"
 # PowerShell 7 プロファイル
+
 # 初期ディレクトリをデスクトップに設定
 Set-Location -Path ([Environment]::GetFolderPath('Desktop'))
 
-# 起動メッセージ
-Write-Host "PowerShell 7へようこそ! 初期ディレクトリはデスクトップに設定されています。" -ForegroundColor Cyan
+# 起動メッセージ（日本語環境かどうかで出し分け）
+if (\$PSUICulture -like 'ja-*') {
+    Write-Host "PowerShell 7へようこそ! 初期ディレクトリはデスクトップに設定されています。" -ForegroundColor Cyan
+} else {
+    Write-Host "Welcome to PowerShell 7! The initial directory is set to your Desktop." -ForegroundColor Cyan
+}
+
+# エイリアス設定
+Set-Alias -Name rdn -Value Resolve-DnsName
 "@
 
 # すべてのユーザープロファイルフォルダを取得
