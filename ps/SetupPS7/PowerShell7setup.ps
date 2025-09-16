@@ -101,7 +101,7 @@ $pwshProfileTemplate = @"
 Set-Location -Path ([Environment]::GetFolderPath('Desktop'))
 
 # 起動メッセージ（基本は英語。日本語環境なら日本語に切替）
-if (\$PSUICulture -like 'ja-*') {
+if ($PSUICulture -like 'ja-*') {
     Write-Host "PowerShell 7へようこそ! 初期ディレクトリはデスクトップに設定されています。" -ForegroundColor Cyan
 } else {
     Write-Host "Welcome to PowerShell 7! The initial directory is set to your Desktop." -ForegroundColor Cyan
@@ -110,6 +110,7 @@ if (\$PSUICulture -like 'ja-*') {
 # エイリアス設定
 Set-Alias -Name rdn -Value Resolve-DnsName
 "@
+
 
 
 # すべてのユーザープロファイルフォルダを取得
