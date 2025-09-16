@@ -93,8 +93,7 @@ if (-not $ps7ShortcutPath) {
 }
 
 # PowerShell 7のプロファイル設定ファイルを作成
-# 初期ディレクトリをデスクトップに設定する
-$pwshProfileTemplate = @"
+$pwshProfileTemplate = @'
 # PowerShell 7 プロファイル
 
 # 初期ディレクトリをデスクトップに設定
@@ -109,7 +108,8 @@ if ($PSUICulture -like 'ja-*') {
 
 # エイリアス設定
 Set-Alias -Name rdn -Value Resolve-DnsName
-"@
+'@
+
 
 
 
