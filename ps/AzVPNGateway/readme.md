@@ -1,6 +1,6 @@
 ## VPN GATWWAY を作ります
 **BasicSkuはAzure Portal からは作成できないことになっているのでAzure PowerShellなどで作る必要がある**
-**BasicSKUは将来的に廃止が決まってるのが、VpnGw1でもそこそこコストがかかるので BasicSKU を使いたい人がいるはず**
+**BasicSKUは将来的に廃止されそうなきもするが、VpnGw1でもそこそこコストがかかるので BasicSKU を使いたい人がいるはず**
 **ただしSKU:BasicSKUはP2Sには対応していないので、P2S 環境を作りたい場合はSKU:VpnGw1を使う必要がある**
 
 ### VPNGWのコスト
@@ -17,8 +17,8 @@ https://learn.microsoft.com/ja-jp/azure/vpn-gateway/vpn-gateway-about-vpngateway
 
 ## 既存の環境にVPNGATEWAY(とGatewaysubnet)をつくる
 VPNGW_add.ps1
-https://github.com/aktsmm/Scripts/blob/main/ps/VPNGateway/VPNGW_add.ps1
+https://github.com/aktsmm/Scripts/blob/main/ps/AzVPNGateway/VPNGW_add.ps1
 
 ## 新規でVnetとVPNGATEWAY(とGatewaysubnet)をつくる
-VPNGW_add.ps1
-https://github.com/aktsmm/Scripts/blob/main/ps/VPNGateway/VPNGW.ps1
+VPNGW.ps1
+https://github.com/aktsmm/Scripts/blob/main/ps/AzVPNGateway/VPNGW.ps1
