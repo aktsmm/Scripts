@@ -1,3 +1,5 @@
+## こちらは VPNGW Basic SKU ＋ Basic Public IP の構成なので、2025/09/ 現在Basic Public IP がデプロイできないため使えないです。
+
 ####
 ##Gatewaysubnetがない場合は作成します。
 ##ある場合はそれを利用します。

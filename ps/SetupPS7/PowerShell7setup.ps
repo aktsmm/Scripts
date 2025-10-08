@@ -93,15 +93,28 @@ if (-not $ps7ShortcutPath) {
 }
 
 # PowerShell 7のプロファイル設定ファイルを作成
-# 初期ディレクトリをデスクトップに設定する
-$pwshProfileTemplate = @"
+$pwshProfileTemplate = @'
 # PowerShell 7 プロファイル
+
 # 初期ディレクトリをデスクトップに設定
 Set-Location -Path ([Environment]::GetFolderPath('Desktop'))
 
-# 起動メッセージ
-Write-Host "PowerShell 7へようこそ! 初期ディレクトリはデスクトップに設定されています。" -ForegroundColor Cyan
-"@
+# 起動メッセージ（基本は英語。日本語環境なら日本語に切替）
+if ($PSUICulture -like 'ja-*') {
+    Write-Host "PowerShell 7へようこそ! 初期ディレクトリはデスクトップに設定されています。" -ForegroundColor Cyan
+    Write-Host "プロファイルを編集するには: notepad `$PROFILE を実行してください。" -ForegroundColor Yellow
+} else {
+    Write-Host "Welcome to PowerShell 7! The initial directory is set to your Desktop." -ForegroundColor Cyan
+    Write-Host "To edit your profile, run: notepad `$PROFILE" -ForegroundColor Yellow
+}
+
+
+# エイリアス設定
+Set-Alias -Name rdn -Value Resolve-DnsName
+'@
+
+
+
 
 # すべてのユーザープロファイルフォルダを取得
 $userFolders = Get-ChildItem -Path "C:\Users" -Directory | Where-Object { $_.Name -ne "Public" -and $_.Name -ne "Default" -and $_.Name -ne "Default User" }
