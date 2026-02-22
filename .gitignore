@@ -10,3 +10,8 @@
 # 特定の秘密ファイルを無視
 *_secret.ps1
 *local.settings.json
+
+# Copilot agent artifacts (keep local in public repos)
+/research/
+/.github/skills/
+/output_sessions/
